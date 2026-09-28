@@ -1,0 +1,3 @@
+total: 0 errors, 0 warnings, 0 checks, 8 lines checked
+
+0001-PCI-P2PDMA-Allow-P2PDMA-through-Intel-Broadwell-host-bridge.patch has no obvious style problems and is ready for submission.

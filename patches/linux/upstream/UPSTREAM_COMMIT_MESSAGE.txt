@@ -1,0 +1,23 @@
+PCI/P2PDMA: Allow P2PDMA through Intel Broadwell host bridge
+
+Intel Haswell-EP host bridges (0x2f00, 0x2f01) are currently present
+in pci_p2pdma_whitelist[] with REQ_SAME_HOST_BRIDGE. However, the
+subsequent generation Broadwell-EP host bridge (0x6f00) is absent from
+the whitelist.
+
+Add Intel Broadwell-EP host bridge device ID 0x6f00 to
+pci_p2pdma_whitelist[] with the REQ_SAME_HOST_BRIDGE flag.
+
+On the reference single-socket Intel Xeon E5-2697A v4 (Broadwell-EP)
+platform with dual PCIe endpoints (AMD Radeon AI PRO R9700) connected
+to Root Ports 00:02.0 and 00:03.0 under host bridge 00:00.0 (0x6f00),
+peer-to-peer DMA transactions across root ports were validated with
+~10.29 GB/s bidirectional throughput (TransferBench SDMA and GFX Push)
+and ~9.49 GB/s collective bus bandwidth (RCCL AllReduce) with zero PCIe
+AER errors, zero DMAR translation faults, and zero ring timeouts.
+
+This change restricts peer transactions to endpoints under the same host
+bridge domain (REQ_SAME_HOST_BRIDGE) and does not permit cross-socket
+P2P routing.
+
+Signed-off-by: Reference System Maintainer <reference-maintainer@local>

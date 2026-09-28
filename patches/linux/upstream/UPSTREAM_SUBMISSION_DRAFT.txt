@@ -1,0 +1,34 @@
+# Upstream Kernel Submission Draft
+
+UPSTREAM_BASE_SHA: 72d3fcf802c45d00b300f25b848a93c3a2bd7c7e
+UPSTREAM_BRANCH: master (torvalds/linux)
+UPSTREAM_CHECK_DATE: 2026-09-28 00:05:20 UTC
+UPSTREAM_6F00_PRESENT: NO
+HASWELL_2F00_PRESENT: YES
+HASWELL_2F01_PRESENT: YES
+
+MAINTAINERS:
+To: Bjorn Helgaas <bhelgaas@google.com>
+To: Logan Gunthorpe <logang@deltatee.com>
+Cc: linux-pci@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+
+======================================================================
+STATUS & READINESS DECLARATIONS
+======================================================================
+UPSTREAM_PATCH_TESTED_ON_CURRENT_MAINLINE: NO
+UPSTREAM_SUBMISSION_READY: NO
+
+RATIONALE:
+While this patch cleanly applies to torvalds/linux mainline master and
+passes checkpatch.pl with 0 errors and 0 warnings, it has NOT yet been
+boot-tested on a pure mainline kernel build without distribution patches.
+Per operational discipline, DO NOT submit upstream until a pure mainline
+kernel test has been executed and verified.
+======================================================================
+
+SUBJECT:
+[PATCH] PCI/P2PDMA: Allow P2PDMA through Intel Broadwell host bridge
+
+BODY:
+See UPSTREAM_COMMIT_MESSAGE.txt
