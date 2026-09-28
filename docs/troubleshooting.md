@@ -12,15 +12,21 @@ Always begin by running the non-destructive diagnostic script:
 ./scripts/diagnose.sh
 ```
 
-A healthy system will report:
+A healthy system will report prerequisite readiness:
 ```text
-=== Overall Assessment ===
+=== Prerequisites Assessment ===
 [PASS] Host bridge 8086:6f00 is present
 [PASS] GPUs are under distinct Root Ports of the same Host Bridge
 [PASS] PCIe links running at expected speed/width
 [PASS] IOMMU active (Translated mode)
 [PASS] 0 PCIe AER / DMAR errors detected
-DIRECT_P2P_READY = YES
+OVERALL: P2P_PREREQUISITES = PASS
+OVERALL: DIRECT_P2P_READY = INCONCLUSIVE (run with --full to execute peer benchmarks)
+```
+
+Running `./scripts/diagnose.sh --full` executes active peer benchmarks and confirms full readiness:
+```text
+OVERALL: DIRECT_P2P_READY = YES
 ```
 
 If any checks fail, follow the troubleshooting procedures below.
@@ -90,15 +96,15 @@ Run:
 ```
 
 ### Analysis
-- AMD RDNA4 (gfx1201) hardware page tables support up to 44-bit physical address space (`DMA_BIT_MASK(44)`).
-- On Intel platforms with >64 GB RAM, physical RAM addresses can exceed `0x0000_0FFF_FFFF_FFFF` (44 bits).
-- Under Intel VT-d **Translated mode** (`intel_iommu=on`), the IOMMU remaps memory into a compact 39-bit or 44-bit IOVA domain, preventing 48-bit DMA truncation.
-- Under **Passthrough mode** (`iommu=pt`), physical addresses above 44-bit are not remapped and will cause silent truncation or DMAR faults.
+- AMD RDNA4 (gfx1201) hardware page tables support up to 44-bit physical address space (`DMA_BIT_MASK(44)`), covering up to 16 TiB ($2^{44}-1$ bytes).
+- System RAM capacity does not directly cause addresses to exceed 44 bits. However, platform firmware or the kernel PCI resource allocator may assign 64-bit ReBAR apertures into high physical MMIO address windows (e.g. 46-bit physical addresses like `0x3808_0000_0000`).
+- Under Intel VT-d **Translated mode** (`intel_iommu=on`), the IOMMU remaps peer memory requests via `dma_map_resource()` into compact 32-bit or 44-bit IOVAs (e.g. `0x0000_8e00_0000`), completely satisfying the GPU's 44-bit DMA mask.
+- Under **Passthrough mode** (`iommu=pt`), raw physical BAR addresses (>44-bit) would be directly presented to the GPU DMA engine without remapping, causing DMAR faults or address truncation.
 
 ### Resolution
-- Keep Intel VT-d enabled in translated mode.
-- Avoid passing `iommu=pt` or `amd_iommu=pt` on architectures requiring sub-48-bit DMA constraints.
-- Note: Stock AMDGPU drivers already enforce 44-bit masks; do not attempt experimental 48-bit kernel hacks.
+- Maintain Intel VT-d enabled in translated mode (`intel_iommu=on`, `DMA-FQ`).
+- Avoid passing `iommu=pt` or `amd_iommu=pt` when 64-bit BARs reside above the 44-bit physical boundary.
+- Note: Stock AMDGPU drivers natively enforce 44-bit DMA masks; do not attempt experimental 48-bit kernel modifications.
 
 ---
 

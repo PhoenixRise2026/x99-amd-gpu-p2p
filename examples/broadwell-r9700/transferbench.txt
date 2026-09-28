@@ -50,5 +50,5 @@ Case: pull_0_to_1 (Direction: GPU 0 -> GPU 1)
   Size: 1,073,741,824 bytes (1024 MiB)  Avg:  3.142 GB/s
 
 Summary:
-- SDMA / GFX Push achieves ~10.29 GB/s across Root Ports (approaching the practical PCIe 3.0 x16 ceiling).
+- Measured peer bandwidth on the reference system: ~10.29 GB/s per direction.
 - Zero bus lockups, zero timeout events, zero system crashes.

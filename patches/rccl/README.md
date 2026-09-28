@@ -13,11 +13,26 @@ This patch allows ROCm RCCL to utilize direct peer-to-peer (P2P) transfers acros
 ## Distinguishing Patch Mechanism vs Runtime Setting
 It is critical to distinguish between:
 1. **Patch Mechanism**:
-   - The code fix relocates `ncclGetUserP2pLevel(&p2pLevel)` to execute after the built-in default demotion (`if (p2pLevel == PATH_SYS) p2pLevel = PATH_PXB;`).
-   - This ensures that if the user explicitly specifies an environment override, RCCL respects that override rather than clamping it back down.
+   - In stock RCCL (`src/graph/paths.cc`), `ncclGetUserP2pLevel(&p2pLevel)` was called before the Intel x86 platform constraint check:
+     ```cpp
+     if (arch == NCCL_TOPO_CPU_ARCH_X86 && vendor == NCCL_TOPO_CPU_VENDOR_INTEL) {
+       p2pLevel = PATH_PXB;
+     }
+     ```
+   - This hardcoded platform clamp unconditionally demoted `p2pLevel` to `PATH_PXB`, overwriting any prior user override such as `NCCL_P2P_LEVEL=PHB`.
+   - The patch relocates `ncclGetUserP2pLevel(&p2pLevel)` to execute *after* the Intel x86 platform clamp, ensuring explicit user override requests take precedence.
 2. **Validated Runtime Setting**:
    - At runtime, the user provides the environment override:
      ```bash
      export NCCL_P2P_LEVEL=PHB
      ```
-   - On the Broadwell-EP reference testbed, `NCCL_P2P_LEVEL=PHB` enables RCCL to route AllReduce and SendRecv collectives directly over PCIe P2P/IPC (`isAllDirectP2p = 1`, `Channel 00 : ... via P2P/IPC`), completely eliminating SHM fallback and delivering ~9.49 GB/s large-message bus bandwidth.
+   - On the Broadwell-EP reference testbed, `NCCL_P2P_LEVEL=PHB` allows RCCL to evaluate `path->type <= p2pLevel` (`PATH_PHB <= PATH_PHB`) as true (`*p2p = 1`).
+   - Consequently, RCCL's transport selection engine selects `via P2P/IPC` instead of falling back to SHM (`via SHM/direct/direct`), delivering ~9.49 GB/s large-message AllReduce bus bandwidth.
+
+## Topology Level vs Transport Distinction
+- `PATH_PXB`, `PATH_PHB`, and `PATH_SYS` are **topology path distance classifications** used to evaluate P2P eligibility.
+- `P2P/IPC`, `SHM`, and `NET` are **transport implementations**.
+- `PATH_SYS` is not synonymous with SHM; rather, when P2P eligibility fails, RCCL falls back to the SHM transport mechanism.
+
+## Upstream Licensing & Attribution
+Upstream RCCL is copyright (c) Advanced Micro Devices, Inc., and includes collective algorithms and infrastructure derived from NVIDIA NCCL (copyright (c) NVIDIA Corporation). This patch is a minimal derived diff against `src/graph/paths.cc` and is governed by the upstream BSD-3-Clause license.

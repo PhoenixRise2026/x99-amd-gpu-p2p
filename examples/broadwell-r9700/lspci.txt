@@ -1,5 +1,6 @@
 # SANITIZED = YES
-# SOURCE_SHA256 = live-capture-lspci
+# SOURCE_ID = live-capture-lspci
+# SOURCE_SHA256 = 3f4cfe8ebc472013a88274a2e9c4f12b978b462dbf784e46fbb4cf96d60683d5
 # SOURCE_DATE = 2026-09-27
 # REDACTIONS = local paths / hostname only
 

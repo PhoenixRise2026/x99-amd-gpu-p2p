@@ -1,27 +1,25 @@
 From 0d2c4fd4c5ea8aa96b4ac4eb468fb4146ab2c921 Mon Sep 17 00:00:00 2001
-From: Reference System Maintainer <reference-maintainer@local>
+From: Open Source Contributor <contributor@example.org>
 Date: Mon, 15 Sep 2026 00:10:00 +0000
 Subject: [PATCH] graph: honor explicit p2p level override after platform limit
 
-In upstream RCCL, ncclGetUserP2pLevel(&p2pLevel) was queried before
-evaluating platform and architecture constraints:
-  if (p2pLevel == PATH_SYS) {
+In upstream RCCL (src/graph/paths.cc), ncclGetUserP2pLevel(&p2pLevel)
+was queried before evaluating Intel x86 architecture constraints:
+  if (arch == NCCL_TOPO_CPU_ARCH_X86 && vendor == NCCL_TOPO_CPU_VENDOR_INTEL) {
     p2pLevel = PATH_PXB;
   }
-Because the SYS -> PXB demotion executes after reading the environment,
-an explicit user configuration such as NCCL_P2P_LEVEL=SYS (or PHB/5)
+Because the Intel x86 platform clamp executed after reading the environment,
+an explicit user configuration such as NCCL_P2P_LEVEL=PHB
 was unconditionally clamped back down to PATH_PXB (level 3).
 
 On systems where dual GPUs reside across distinct root ports under the
-same host bridge (PATH_PHB / PATH_SYS), this unconditional clamping
-prevented direct P2P/IPC transport and forced RCCL to fall back to SHM
-staging, despite hardware and kernel support being fully active.
+same host bridge (physical path PATH_PHB), this unconditional clamping
+prevented direct P2P eligibility (PATH_PHB > PATH_PXB) and forced
+RCCL's transport selection to fall back to SHM staging, despite
+hardware and kernel P2PDMA support being fully active.
 
-Move ncclGetUserP2pLevel(&p2pLevel) to execute after the default
-PATH_SYS -> PATH_PXB clamp, ensuring explicit user override requests
-take precedence.
-
-Signed-off-by: Reference System Maintainer <reference-maintainer@local>
+Move ncclGetUserP2pLevel(&p2pLevel) to execute after the Intel x86
+platform clamp, ensuring explicit user override requests take precedence.
 ---
  src/graph/paths.cc | 6 +++---
  1 file changed, 3 insertions(+), 3 deletions(-)

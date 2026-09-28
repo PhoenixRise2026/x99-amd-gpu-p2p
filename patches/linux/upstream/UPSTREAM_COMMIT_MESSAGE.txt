@@ -12,7 +12,7 @@ On the reference single-socket Intel Xeon E5-2697A v4 (Broadwell-EP)
 platform with dual PCIe endpoints (AMD Radeon AI PRO R9700) connected
 to Root Ports 00:02.0 and 00:03.0 under host bridge 00:00.0 (0x6f00),
 peer-to-peer DMA transactions across root ports were validated with
-~10.29 GB/s bidirectional throughput (TransferBench SDMA and GFX Push)
+~10.29 GB/s per-direction throughput (TransferBench SDMA and GFX Push)
 and ~9.49 GB/s collective bus bandwidth (RCCL AllReduce) with zero PCIe
 AER errors, zero DMAR translation faults, and zero ring timeouts.
 
@@ -20,4 +20,5 @@ This change restricts peer transactions to endpoints under the same host
 bridge domain (REQ_SAME_HOST_BRIDGE) and does not permit cross-socket
 P2P routing.
 
-Signed-off-by: Reference System Maintainer <reference-maintainer@local>
+# DCO Sign-off note: Real contributor name and email must be provided
+# at upstream submission time via: git commit -s

@@ -1,5 +1,6 @@
 # SANITIZED = YES
-# SOURCE_SHA256 = live-capture-topology
+# SOURCE_ID = live-capture-topology
+# SOURCE_SHA256 = 6f51e252939a2f23daf8aa8adc203f2f8b1c91ab6e2c92f4cf9e65629291b766
 # SOURCE_DATE = 2026-09-27
 # REDACTIONS = local paths / hostname only
 

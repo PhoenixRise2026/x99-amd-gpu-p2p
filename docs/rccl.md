@@ -4,38 +4,44 @@
 
 RCCL (ROCm Communication Collectives Library) is AMD's collective communication library (derived from NVIDIA NCCL). In distributed tensor parallel inference (such as SGLang TP2), AllReduce operations occur at every transformer layer, making inter-GPU bandwidth and latency a critical bottleneck.
 
-When two GPUs are attached to different Root Ports under the same host bridge, RCCL must classify the topology distance and decide whether to establish direct P2P rings/trees or fall back to staging through host memory.
+When two GPUs are attached to different Root Ports under the same host bridge, RCCL evaluates their physical topology distance and determines whether direct P2P transport is eligible, or whether communication must fall back to host shared memory (SHM).
 
 ---
 
-## Topology Levels in RCCL
+## Topology Distance Levels vs Transport Selection
 
-RCCL classifies the interconnect distance between pairs of GPUs using hierarchical levels:
+It is essential to distinguish between **topology distance classification** and **transport selection**:
 
-| Level | Identifier | Description | Relative Speed |
+### 1. Topology Distance Levels
+RCCL classifies the physical interconnect distance between pairs of GPUs using hierarchical path levels:
+
+| Level | Identifier | Description | Relative Distance |
 | :--- | :--- | :--- | :--- |
 | **LOC** | `PATH_LOC` | Same GPU / loopback | Internal VRAM |
-| **NVL** | `PATH_NVL` | Dedicated high-speed fabric (xGMI / NVLink) | Highest |
-| **PIX** | `PATH_PIX` | Traversal through a single PCIe Switch | Very High (~PCIe line rate) |
-| **PXB** | `PATH_PXB` | Traversal through multiple PCIe Switches | High |
-| **PHB** | `PATH_PHB` | Traversal through PCIe Host Bridge / Root Complex | High (~10–12 GB/s on PCIe 3.0 x16) |
-| **SYS** | `PATH_SYS` | Traversal through system memory / QPI / UPI / NUMA | Low (~2–3 GB/s host fallback) |
+| **NVL** | `PATH_NVL` | Dedicated high-speed fabric (xGMI / NVLink) | Dedicated interconnect |
+| **PIX** | `PATH_PIX` | Traversal through a single PCIe Switch | Switch-local |
+| **PXB** | `PATH_PXB` | Traversal through multiple PCIe Switches | Multi-switch |
+| **PHB** | `PATH_PHB` | Traversal through PCIe Host Bridge / Root Complex | Host Bridge |
+| **SYS** | `PATH_SYS` | Traversal through system memory / QPI / UPI / NUMA | Inter-socket / System |
 
-On a single-socket Intel X99 / Broadwell-EP system, GPU 0 (`05:00.0`) and GPU 1 (`08:00.0`) reside under separate Root Ports (`00:02.0` and `00:03.0`) of the same Host Bridge (`00:00.0` `8086:6f00`). Therefore, the physical topology level is **`PATH_PHB`**.
+On a single-socket Intel X99 / Broadwell-EP system, GPU 0 (`05:00.0`) and GPU 1 (`08:00.0`) reside under separate Root Ports (`00:02.0` and `00:03.0`) of the same Host Bridge (`00:00.0` `8086:6f00`). Therefore, the physical path distance is **`PATH_PHB`**.
+
+### 2. Transport Mechanisms
+- **P2P/IPC**: Direct peer-to-peer DMA over the PCIe bus without copying through host RAM.
+- **SHM**: Host shared memory bounce buffers coordinated by the CPU.
+- **NET**: Network transport (e.g. RoCE, InfiniBand, or sockets).
+
+`PATH_SYS` is not a transport; rather, when direct P2P eligibility is rejected (`*p2p = 0`), RCCL's transport selection engine falls back to `via SHM/direct/direct`.
 
 ---
 
 ## The Role of `NCCL_P2P_LEVEL`
 
-By default, RCCL may conservatively disable P2P or demote the maximum permitted P2P level to `PATH_PXB` or `PATH_SYS` if:
-1. The platform is not an officially certified AMD multi-GPU platform (e.g. non-EPYC, non-xGMI).
-2. The kernel reports host bridge limitations.
-
-Setting:
+The environment variable `NCCL_P2P_LEVEL` sets the maximum allowable path distance for P2P eligibility:
 ```bash
 export NCCL_P2P_LEVEL=PHB
 ```
-informs RCCL that transfers crossing the PCIe Host Bridge are permitted to use direct P2P DMA rather than falling back to host memory bounce buffers.
+This instructs RCCL that transfers crossing the PCIe Host Bridge (`PATH_PHB`) should be considered eligible for direct P2P transport.
 
 ---
 
@@ -43,22 +49,28 @@ informs RCCL that transfers crossing the PCIe Host Bridge are permitted to use d
 
 ### The Issue in Stock RCCL 7.2.0
 
-In upstream RCCL (`src/graph/paths.cc`), `ncclGetUserP2pLevel(&p2pLevel)` was called before evaluating platform and architecture constraints:
+In upstream RCCL (`src/graph/paths.cc`), `ncclGetUserP2pLevel(&p2pLevel)` was called before evaluating Intel x86 architecture constraints:
 ```cpp
   int p2pLevel = PATH_SYS;
 
-  // User override was queried here in stock code:
-  // NCCLCHECK(ncclGetUserP2pLevel(&p2pLevel));
+  // Stock RCCL queried user override first:
+  NCCLCHECK(ncclGetUserP2pLevel(&p2pLevel));
 
-  if (p2pLevel == PATH_SYS) {
+  // Then Intel x86 platform logic executed:
+  int arch, vendor, model;
+  NCCLCHECK(ncclTopoCpuType(system, &arch, &vendor, &model));
+  if (arch == NCCL_TOPO_CPU_ARCH_ARM) p2pLevel = PATH_PXB;
+  if (arch == NCCL_TOPO_CPU_ARCH_X86 && vendor == NCCL_TOPO_CPU_VENDOR_INTEL) {
     p2pLevel = PATH_PXB;
   }
 ```
-Because the `PATH_SYS` -> `PATH_PXB` clamp occurred *after* querying the environment, an explicit user configuration like `NCCL_P2P_LEVEL=PHB` (or `SYS`) could be overridden back to `PATH_PXB` (level 3). On systems where dual GPUs reside across distinct root ports under the same host bridge (`PATH_PHB` / `PATH_SYS`), this demotion forced RCCL to fall back to SHM staging.
+Because the Intel x86 clamp unconditionally demoted `p2pLevel` to `PATH_PXB`, an explicit user configuration such as `NCCL_P2P_LEVEL=PHB` was overwritten back to `PATH_PXB` (level 3).
+
+For the physical GPU pair across Root Ports (`path->type = PATH_PHB`), `path->type <= p2pLevel` (`PATH_PHB <= PATH_PXB`) evaluated to false (`*p2p = 0`). Consequently, direct P2P was disabled, and transport selection fell back to SHM staging.
 
 ### The Fix
 
-The patch `patches/rccl/0001-graph-honor-explicit-p2p-level-after-platform-limit.patch` relocates `ncclGetUserP2pLevel(&p2pLevel)` to execute *after* the default clamp, ensuring explicit user override requests take precedence:
+The patch in `patches/rccl/0001-graph-honor-explicit-p2p-level-after-platform-limit.patch` relocates `ncclGetUserP2pLevel(&p2pLevel)` to execute *after* the Intel x86 platform clamp:
 
 ```diff
 --- a/src/graph/paths.cc
@@ -84,31 +96,44 @@ The patch `patches/rccl/0001-graph-honor-explicit-p2p-level-after-platform-limit
    if (path->type <= p2pLevel) *p2p = 1;
 ```
 
+With this patch, `NCCL_P2P_LEVEL=PHB` successfully restores `p2pLevel = PATH_PHB`. Because `PATH_PHB <= PATH_PHB` is true, direct P2P eligibility is granted, and RCCL selects the high-performance `P2P/IPC` transport.
+
 ---
 
 ## Benchmarking Collectives: `rccl-tests`
 
-We benchmark collective AllReduce performance across message sizes from 8 MB to 1 GB using `rccl-tests`:
+Collective AllReduce performance was evaluated on the reference dual AMD R9700 system using the patched RCCL runtime:
 
 ```bash
 # Execute benchmark via the automated script:
 ./scripts/run-rccl.sh
 ```
 
-### Measured Performance Comparison
+### Verified Empirical Performance (Raw Evidence: `rccl.txt`)
 
-| Metric | Stock Host Fallback (`PATH_SYS`) | Direct P2P (`PATH_PHB` + Kernel Whitelist) | Improvement |
-| :--- | :--- | :--- | :--- |
-| **AllReduce Bus Bandwidth (128 MB)** | 2.76 GB/s | **9.49 GB/s** | **+243.8% (3.44x)** |
-| **AllReduce Bus Bandwidth (256 MB)** | 2.81 GB/s | **9.52 GB/s** | **+238.8% (3.39x)** |
-| **Transport Protocol** | Ring (Host Memory Staging) | Direct P2P Ring (PCIe DMA-BUF) | Direct peer memory access |
-| **Host CPU RAM Traffic** | High (memory saturation) | Zero host RAM copies | Host RAM decoupled |
+All data below is locked to `examples/broadwell-r9700/rccl.txt` (Rank=2 Ring AllReduce):
+
+| Message Size | Transferred Bytes | Hardware Latency (Median) | Bus Bandwidth | Verify Status | Kernel Errors |
+| :---: | :---: | :---: | :---: | :---: | :---: |
+| **1 MiB** | 1,048,576 | 0.237 ms | 4.418 GB/s | **PASS** | 0 DMAR / 0 AER |
+| **4 MiB** | 4,194,304 | 0.603 ms | 6.956 GB/s | **PASS** | 0 DMAR / 0 AER |
+| **16 MiB** | 16,777,216 | 1.900 ms | 8.832 GB/s | **PASS** | 0 DMAR / 0 AER |
+| **64 MiB** | 67,108,864 | 7.171 ms | 9.359 GB/s | **PASS** | 0 DMAR / 0 AER |
+| **256 MiB** | 268,435,456 | 28.286 ms | 9.490 GB/s | **PASS** | 0 DMAR / 0 AER |
+| **512 MiB** | 536,870,912 | 56.546 ms | 9.494 GB/s | **PASS** | 0 DMAR / 0 AER |
+| **1024 MiB** | 1,073,741,824 | 113.194 ms | 9.486 GB/s | **PASS** | 0 DMAR / 0 AER |
+
+*Note: In 2-rank ring AllReduce, algorithmic bandwidth equals bus bandwidth ($B_{\text{bus}} = B_{\text{alg}}$).*
+
+### Transport Comparison
+- **Stock RCCL Behavior**: Direct P2P eligibility rejected (`isAllDirectP2p = 0`); transport fell back to host memory bounce buffers (`via SHM/direct/direct`).
+- **Direct P2P Behavior**: Direct P2P eligibility confirmed (`isAllDirectP2p = 1`); transport routed over PCIe P2P DMA (`via P2P/IPC`), achieving a stable ~9.49 GB/s large-message plateau with zero host RAM copies.
 
 ---
 
-## Recommended Production Environment
+## Recommended Production Configuration
 
-To run distributed workloads (e.g. SGLang TP2, vLLM, PyTorch DDP) with direct P2P:
+To run distributed workloads (e.g. SGLang TP2, vLLM, PyTorch DDP) with direct P2P on Broadwell-EP:
 
 ```bash
 # Enable P2P across the Broadwell Host Bridge
@@ -116,6 +141,5 @@ export NCCL_P2P_LEVEL=PHB
 
 # Recommended diagnostic and performance tuning
 export NCCL_DEBUG=INFO
-export NCCL_DEBUG_SUBSYS=INIT,ENV,GRAPH
 export NCCL_BUFFSIZE=8388608
 ```
