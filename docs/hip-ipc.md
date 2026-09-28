@@ -24,41 +24,54 @@ Under modern ROCm (ROCm 6.x and 7.x):
 
 ---
 
-## Verification Test: `test_hip_ipc.cpp`
+## External Verification Binary (`EXTERNAL_DEPENDENCY`)
 
-We validate bidirectional HIP IPC with a standalone multi-process test:
-1. Process 0 initializes GPU 0, allocates 64 MB of device memory, fills it with a known pattern (`0xAA`), and exports a handle via `hipIpcGetMemHandle()`.
-2. The handle is shared via UNIX domain socket or pipe with Process 1 on GPU 1.
-3. Process 1 opens the handle via `hipIpcOpenMemHandle()`, initiates a direct kernel read/write from GPU 1 into the mapped buffer, and writes back `0x55`.
+The standalone cross-process HIP IPC validation binary used during hardware testing is treated as an external dependency and is not distributed in v0.1. Its source provenance is from external ROCm HIP sample test harnesses (exact upstream commit: UNKNOWN).
+
+The test methodology validates bidirectional HIP IPC with a multi-process architecture:
+1. Process 0 initializes GPU 0, allocates device memory (1M, 16M, and 64M tiers), fills it with a known pattern, and exports a handle via `hipIpcGetMemHandle()`.
+2. The handle is shared with Process 1 on GPU 1.
+3. Process 1 opens the handle via `hipIpcOpenMemHandle()`, performs direct kernel verification, and writes back a verification pattern.
 4. Process 0 verifies the modified pattern in device memory.
 5. Steps 1-4 are executed in reverse (GPU 1 exporting to GPU 0) to ensure bidirectional P2P.
 
 ### Running the Test
 
+Pass an existing external HIP IPC validation binary:
 ```bash
-# Compile and run via the automated script:
-./scripts/check-hip-ipc.sh
+./scripts/check-hip-ipc.sh --binary /path/to/hip_ipc_binary
 ```
+If no binary is supplied or found, the script exits cleanly with code `2` (`SKIP`).
 
-### Verified Test Output
+### Verified Test Output (Excerpt from `examples/broadwell-r9700/hip-ipc.txt`)
 
 ```text
-[INFO] Checking HIP Peer Access:
-hipDeviceCanAccessPeer(GPU 0 -> GPU 1): 1
-hipDeviceCanAccessPeer(GPU 1 -> GPU 0): 1
+DIRECTION: GPU 0 (Exporter) -> GPU 1 (Importer)
+--------------------------------------------------------------------------------
+[Test 1] 1 MiB (1,048,576 bytes)
+  Forward Read Verify:  PASS (Pattern matches expected bitmask)
+  Reverse Write Verify: PASS (Pattern matches expected bitmask)
+  Hardware Health:      0 DMAR faults, 0 AER errors
 
-[INFO] Testing HIP IPC Buffer Sharing (64 MB):
-Forking worker processes...
-GPU 0 allocated 67108864 bytes at 0x7f3000000000
-Exporting hipIpcMemHandle...
-Worker on GPU 1 opened handle successfully.
-GPU 1 validating data integrity: MATCH (0xAA)
-GPU 1 overwriting with test pattern: 0x55
-Worker on GPU 1 closed handle.
-GPU 0 validating data integrity: MATCH (0x55)
+[Test 2] 16 MiB (16,777,216 bytes)
+  Forward Read Verify:  PASS (Pattern matches expected bitmask)
+  Reverse Write Verify: PASS (Pattern matches expected bitmask)
+  Hardware Health:      0 DMAR faults, 0 AER errors
 
-Bidirectional verification passed.
-Result: 100% PASS, 0 errors, 0 memory corruption.
+[Test 3] 64 MiB (67,108,864 bytes)
+  Forward Read Verify:  PASS (Pattern matches expected bitmask)
+  Reverse Write Verify: PASS (Pattern matches expected bitmask)
+  Hardware Health:      0 DMAR faults, 0 AER errors
+
+DIRECTION: GPU 1 (Exporter) -> GPU 0 (Importer)
+--------------------------------------------------------------------------------
+[Test 4] 1 MiB (1,048,576 bytes)   -> PASS (0 DMAR / 0 AER)
+[Test 5] 16 MiB (16,777,216 bytes) -> PASS (0 DMAR / 0 AER)
+[Test 6] 64 MiB (67,108,864 bytes) -> PASS (0 DMAR / 0 AER)
+
+Summary:
+- Cross-process P2P memory access verified in both directions across all sizes.
+- Zero kernel faults (0 DMAR / 0 AER) during memory handle transactions.
 ```
 
 ---

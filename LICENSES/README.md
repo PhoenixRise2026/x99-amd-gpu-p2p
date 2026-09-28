@@ -8,7 +8,7 @@ This repository contains materials under different open-source licenses based on
 
 ### 2. Linux Kernel Patches
 - **License**: GNU General Public License v2.0 only (`GPL-2.0-only`)
-- **Applies to**: `patches/linux/**/*.patch`
+- **Applies to**: Files under `patches/linux/` derived from Linux kernel source (`patches/linux/**/*.patch`, `patches/linux/**/*.diff`).
 - **Origin**: Linux kernel (`drivers/pci/p2pdma.c`).
 
 ### 3. RCCL Patches

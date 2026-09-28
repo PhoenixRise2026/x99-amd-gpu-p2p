@@ -21,5 +21,6 @@ if [[ -z "$TB_BIN" || ! -x "$TB_BIN" ]]; then
 fi
 
 echo "=== Running TransferBench P2P Matrix Benchmark ==="
-echo "Executing: $TB_BIN p2p"
+export NUM_CPU_DEVICES=0
+echo "Executing: NUM_CPU_DEVICES=0 $TB_BIN p2p"
 "$TB_BIN" p2p

@@ -24,7 +24,8 @@ All benchmark data in this case study is strictly locked to the verified empiric
 - **ROCm Version**: 7.2.4
 - **AMDGPU Driver**: Stock `DMA_BIT_MASK(44)` (no custom GMC hack)
 - **IOMMU**: Intel VT-d enabled in Translated mode (`DMA-FQ`)
-- **Model**: `Qwen/Qwen3.8-27B-AWQ-MTP` (Dense DeltaNet + Attention hybrid architecture, 64 layers)
+- **Base Model Family**: Qwen3.8-27B (Dense DeltaNet + Attention hybrid architecture, 64 layers)
+- **Tested Quantized Artifact**: `shawnw3i/Qwen3.8-27B-AWQ-MTP` (Safetensors INT4 AWQ)
 - **Serving Framework**: SGLang v0.5.18 (commit `07eb3ec8`)
 - **Attention Backend**: Triton (`--attention-backend triton`)
 - **Decode Stack**: Mixed Triton/HIP

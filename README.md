@@ -35,8 +35,8 @@ All performance figures below are strictly locked to verifiable raw test evidenc
 
 1. **Kernel DMA Mask & "dma44"**:
    The validated kernel **does not contain a custom 44-bit DMA patch**. AMDGPU natively uses its stock `DMA_BIT_MASK(44)`. The string `dma44` in historical local kernel build tags was retained solely as a build milestone identifier from an earlier experiment where an unstable 48-bit DMA hack was tested and reverted. No custom GMC driver modification is needed or used.
-2. **IOMMU Addressing & Causality**:
-   Intel VT-d must be enabled in **Translated mode** (`intel_iommu=on`). The 44-bit DMA address space covers up to 16 TiB ($2^{44}-1$ bytes). The risk on 64-bit systems arises when firmware or kernel MMIO windows allocate GPU BAR resources into high 64-bit address space. Under Translated mode, the IOMMU dynamically remaps peer accesses into compact IOVAs, ensuring addresses remain within the 44-bit DMA mask.
+2. **IOMMU Addressing & Causality (Reference System Scope)**:
+   On the validated reference system, translated VT-d was required because the peer BAR apertures were placed above the GPUs' stock 44-bit DMA-addressable physical range (46-bit MMIO addresses like `0x3808_...`). Under Translated mode (`intel_iommu=on`, `DMA-FQ`), the IOMMU dynamically remaps peer accesses into compact IOVAs, ensuring addresses remain within the 44-bit DMA mask. This is a characteristic of this reference system rather than an invariant requirement across all X99 motherboards. A system whose peer BAR resources are already physical addressable within the device DMA mask may have different requirements.
 3. **AITER & Runtime Backend**:
    AITER is not installed or active (`AITER_ACTIVE = NO`) in the validated SGLang v0.5.18 environment. The validated decode stack is mixed Triton/HIP (Full Attention: Triton; GDN/recurrent: Triton; Tree-Verify: Triton; AWQ M>1: Triton; AWQ M=1: native HIP GEMV). This describes the validated software stack only and should not be interpreted as a hardware support limitation for AITER on gfx1201.
 4. **PCIe Bridge Device String**:
@@ -131,14 +131,16 @@ A candidate patch prepared for upstream `torvalds/linux` master is provided as a
 
 ---
 
-## Configuring RCCL for Direct P2P: The Two-Gate Model
+## Configuring Direct P2P: Readiness Gates
 
-Direct P2P AllReduce requires clearing two independent gates (validated on RCCL `2.27.7` / `rocm-7.2.0` base):
+Direct P2P AllReduce requires clearing three distinct layers (validated on the reference Broadwell-EP + RCCL `2.27.7` / `rocm-7.2.0` testbed):
 
-1. **Gate A (Kernel Subsystem)**:
-   - Intel Broadwell-EP `8086:6f00` must be present in the Linux kernel `pci_p2pdma_whitelist[]`.
-   - Intel VT-d IOMMU must operate in Translated mode (`DMA-FQ`).
-2. **Gate B (RCCL User-Space Graph)**:
+1. **Platform Addressability (Reference System Scope)**:
+   - On the reference testbed, platform firmware placed GPU 64-bit BARs at physical 46-bit addresses; Intel VT-d operating in Translated mode (`DMA-FQ`) was required to remap transactions into compact IOVAs compatible with the GPUs' stock 44-bit DMA mask.
+   - Systems with physical BAR placement already within device DMA masks may not require translated IOMMU domains.
+2. **Kernel Subsystem Gate**:
+   - Intel Broadwell-EP `8086:6f00` must be present in the Linux kernel `pci_p2pdma_whitelist[]` (`drivers/pci/p2pdma.c`) with `REQ_SAME_HOST_BRIDGE`.
+3. **RCCL User-Space Graph Gate**:
    - In stock RCCL 2.27.7, hardcoded Intel x86 platform heuristics unconditionally demoted `p2pLevel` to `PATH_PXB`, ignoring user environment variables.
    - The included RCCL patch (`patches/rccl/0001-graph-honor-explicit-p2p-level-after-platform-limit.patch`) ensures that setting `NCCL_P2P_LEVEL=PHB` successfully grants P2P eligibility for Root Port traversal:
    ```bash

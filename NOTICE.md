@@ -9,7 +9,7 @@ This project contains documentation, diagnostic scripts, patch files, and saniti
 2. **RCCL Patches**:
    - Derived from AMD ROCm RCCL (`src/graph/paths.cc`).
    - Copyright (c) 2015-2020 NVIDIA CORPORATION. All rights reserved.
-   - Modifications Copyright (c) 2019-2026 Advanced Micro Devices, Inc. All rights reserved.
+   - Modifications Copyright (c) 2019-2025 Advanced Micro Devices, Inc. All rights reserved.
    - Modifications Copyright (c) Microsoft Corporation.
    - Licensed under BSD-3-Clause / MIT.
 3. **SGLang Case-Study References**:

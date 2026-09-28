@@ -19,10 +19,15 @@ RCCL classifies the physical interconnect distance between pairs of GPUs using h
 | :--- | :--- | :---: | :--- |
 | **LOC** | `PATH_LOC` | 0 | Same GPU / loopback |
 | **NVL** | `PATH_NVL` | 1 | Dedicated high-speed fabric (xGMI / NVLink) |
-| **PIX** | `PATH_PIX` | 3 | Traversal through a single PCIe Switch |
+| **NVB** | `PATH_NVB` | 2 | Traversal across multiple fabric hops |
+| **C2C** | `PATH_C2C` | 3 | Chip-to-chip direct coherent interconnect |
+| **PIX** | `PATH_PIX` | 4 | Traversal through a single PCIe Switch |
 | **PXB** | `PATH_PXB` | 5 | Traversal through multiple PCIe Switches |
+| **P2C** | `PATH_P2C` | 6 | PCIe-to-coherent interconnect |
+| **PXN** | `PATH_PXN` | 7 | PCIe switch cross-network / host bridge |
 | **PHB** | `PATH_PHB` | 8 | Traversal through PCIe Host Bridge / Root Complex |
 | **SYS** | `PATH_SYS` | 9 | Traversal at system / inter-socket / fallback distance |
+| **NET** | `PATH_NET` | 10 | Network interface transport distance |
 
 On a single-socket Intel X99 / Broadwell-EP system, GPU 0 (`05:00.0`) and GPU 1 (`08:00.0`) reside under separate Root Ports (`00:02.0` and `00:03.0`) of the same Host Bridge (`00:00.0` `8086:6f00`). Therefore, the physical path distance is **`PATH_PHB`** (enum value 8).
 

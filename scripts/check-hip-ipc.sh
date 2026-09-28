@@ -2,12 +2,9 @@
 #
 # check-hip-ipc.sh - Safe wrapper to verify cross-process HIP IPC memory handle sharing
 #
-# Provenance & Reproduction Notes:
-#   This script executes an external standalone HIP IPC test binary.
-#   Origin: ROCm HIP test suite / HIP sample (e.g. hipIpcMemAccess or hip_ipc_standalone.cpp).
-#
-# Build Instructions:
-#   hipcc -O3 -std=c++17 hip_ipc_standalone.cpp -o bin/hip_ipc_standalone
+# Provenance & Execution Notes:
+#   This script executes an external standalone HIP IPC test binary (EXTERNAL_DEPENDENCY).
+#   The validation test binary is not distributed in v0.1; specify via --binary <path-to-binary>.
 #
 # Validated Environment Setting:
 #   export HSA_ENABLE_IPC_MODE_LEGACY=0

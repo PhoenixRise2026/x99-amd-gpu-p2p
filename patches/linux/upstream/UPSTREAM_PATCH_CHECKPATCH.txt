@@ -1,3 +1,3 @@
 total: 0 errors, 0 warnings, 0 checks, 8 lines checked
 
-0001-broadwell-6f00-p2pdma-candidate.diff has no obvious style problems and is ready for submission.
+0001-broadwell-6f00-p2pdma-candidate.diff is checkpatch clean; candidate prepared; runtime validation on current mainline pending; upstream submission pending physical validation.

@@ -46,9 +46,10 @@ This document provides the definitive version and revision mapping for all hardw
 | Component | Reported Version | Base Commit / Artifact SHA | Notes |
 | :--- | :--- | :--- | :--- |
 | **SGLang** | `v0.5.18` | Base `71de97b26` / Tested `07eb3ec8` | Tensor Parallelism (TP=2) serving engine |
-| **Model** | `Qwen3.8-27B-AWQ-MTP` | Safetensors INT4 AWQ | 64 Layers, group size 64, hybrid DeltaNet + Attention |
+| **Model Artifact** | `shawnw3i/Qwen3.8-27B-AWQ-MTP` | Safetensors INT4 AWQ (Base: Qwen3.8-27B) | 64 Layers, group size 64, hybrid DeltaNet + Attention |
 | **Attention Backend** | `triton` | Native SGLang Triton backend | `--attention-backend triton` |
-| **Full Attention** | Triton | `tree_verify_attention_fwd` | Triton-based verification kernel |
+| **Full Attention** | Triton | Native Triton attention kernels | Prefill / decode attention path |
 | **Recurrent Path (GDN)** | Triton | `torch_triton_sequential_recurrent` | Hybrid recurrent state path |
 | **AWQ GEMM ($M > 1$)** | Triton | `triton_awq_gemm` | Batched AWQ GEMM |
 | **AWQ GEMV ($M = 1$)** | Native HIP | `awq_gemv_bf16_hip` | Single-token decode kernel |
+| **MTP Tree-Verify** | Triton | `tree_verify_attention_fwd` | Multi-token prediction verification kernel |

@@ -17,7 +17,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PREREQS_PASS=1
 
 TEST_MOCK_ACTIVE=0
-if [[ -n "${TEST_MOCK_HIP_IPC:-}" || -n "${TEST_MOCK_TRANSFERBENCH:-}" || -n "${TEST_MOCK_RCCL:-}" || -n "${TEST_MOCK_IOMMU:-}" || -n "${TEST_MOCK_GPU_COUNT:-}" || -n "${TEST_MOCK_KERNEL_ERRORS:-}" ]]; then
+if [[ -n "${TEST_MOCK_HIP_IPC:-}" || -n "${TEST_MOCK_TRANSFERBENCH:-}" || -n "${TEST_MOCK_TRANSFERBENCH_OUT:-}" || -n "${TEST_MOCK_RCCL:-}" || -n "${TEST_MOCK_RCCL_OUT:-}" || -n "${TEST_MOCK_IOMMU:-}" || -n "${TEST_MOCK_GPU_COUNT:-}" || -n "${TEST_MOCK_KERNEL_ERRORS:-}" ]]; then
     TEST_MOCK_ACTIVE=1
 fi
 
@@ -266,20 +266,33 @@ else
             break
         fi
     done
+    if [[ -n "${TEST_MOCK_TRANSFERBENCH_OUT:-}" ]]; then
+        TB_OUT="$TEST_MOCK_TRANSFERBENCH_OUT"
+        TB_RET=0
+        TB_BIN="mock"
+    fi
     if [[ -n "$TB_BIN" ]]; then
-        set +e
-        TB_OUT=$("$TB_BIN" p2p 2>&1)
-        TB_RET=$?
-        set -e
+        if [[ -z "${TEST_MOCK_TRANSFERBENCH_OUT:-}" ]]; then
+            set +e
+            TB_OUT=$(NUM_CPU_DEVICES=0 "$TB_BIN" p2p 2>&1)
+            TB_RET=$?
+            set -e
+        fi
         if [[ $TB_RET -ne 0 ]] || echo "$TB_OUT" | grep -qiE "No valid transfers|error|failed"; then
             TB_RESULT="FAIL"
             echo "  TransferBench execution: FAIL"
-        elif echo "$TB_OUT" | grep -qE "([0-9]+\.[0-9]+ GB/s|GPU [0-9] -> GPU [0-9]|dma_[0-9]|push_[0-9])"; then
-            TB_RESULT="PASS"
-            echo "  TransferBench execution: PASS (Peer transfers measured)"
+        elif echo "$TB_OUT" | grep -qiE "(GPU\s*0\s*->\s*GPU\s*1|GPU\s*1\s*->\s*GPU\s*0|GPU0\s*->\s*GPU1|GPU1\s*->\s*GPU0|dma_[0-9]+_to_[0-9]+|push_[0-9]+_to_[0-9]+|pull_[0-9]+_to_[0-9]+)" && echo "$TB_OUT" | grep -qE "[0-9]+\.[0-9]+\s*GB/s"; then
+            # Verify distinct GPUs (reject self-transfers like dma_0_to_0)
+            if echo "$TB_OUT" | grep -qiE "(dma_0_to_0|push_0_to_0|pull_0_to_0|dma_1_to_1|push_1_to_1|pull_1_to_1|GPU\s*0\s*->\s*GPU\s*0|GPU\s*1\s*->\s*GPU\s*1)" && ! echo "$TB_OUT" | grep -qiE "(GPU\s*0\s*->\s*GPU\s*1|GPU\s*1\s*->\s*GPU\s*0|GPU0\s*->\s*GPU1|GPU1\s*->\s*GPU0|dma_0_to_1|push_0_to_1|pull_0_to_1|dma_1_to_0|push_1_to_0|pull_1_to_0)"; then
+                TB_RESULT="INCONCLUSIVE"
+                echo "  TransferBench execution: INCONCLUSIVE (only self-transfers detected)"
+            else
+                TB_RESULT="PASS"
+                echo "  TransferBench execution: PASS (Peer GPU transfers measured)"
+            fi
         else
             TB_RESULT="INCONCLUSIVE"
-            echo "  TransferBench execution: INCONCLUSIVE (exit 0, but no explicit peer bandwidth table detected)"
+            echo "  TransferBench execution: INCONCLUSIVE (no explicit peer GPU bandwidth table detected)"
         fi
     else
         echo "  [SKIP] TransferBench binary not found at default paths (EXTERNAL_DEPENDENCY)."
@@ -301,20 +314,27 @@ else
             break
         fi
     done
+    if [[ -n "${TEST_MOCK_RCCL_OUT:-}" ]]; then
+        RCCL_OUT="$TEST_MOCK_RCCL_OUT"
+        RCCL_RET=0
+        RCCL_TEST_BIN="mock"
+    fi
     if [[ -n "$RCCL_TEST_BIN" ]]; then
-        set +e
-        export NCCL_P2P_LEVEL=PHB
-        export NCCL_DEBUG=INFO
-        export NCCL_DEBUG_SUBSYS=INIT,ENV
-        RCCL_OUT=$("$RCCL_TEST_BIN" -b 64M -e 64M -g 2 2>&1)
-        RCCL_RET=$?
-        set -e
-        if [[ $RCCL_RET -ne 0 ]] || echo "$RCCL_OUT" | grep -qE "SHM|directMode 0|isAllDirectP2p 0"; then
+        if [[ -z "${TEST_MOCK_RCCL_OUT:-}" ]]; then
+            set +e
+            export NCCL_P2P_LEVEL=PHB
+            export NCCL_DEBUG=INFO
+            export NCCL_DEBUG_SUBSYS=INIT,ENV
+            RCCL_OUT=$("$RCCL_TEST_BIN" -b 64M -e 64M -g 2 2>&1)
+            RCCL_RET=$?
+            set -e
+        fi
+        if [[ $RCCL_RET -ne 0 ]] || echo "$RCCL_OUT" | grep -qiE "(via SHM|isAllDirectP2p 0|P2P direct disabled|P2P disabled)"; then
             RCCL_RESULT="FAIL"
             echo "  RCCL P2P AllReduce: FAIL (SHM fallback or execution error)"
-        elif echo "$RCCL_OUT" | grep -qE "(via P2P|isAllDirectP2p 1|via P2P/IPC)"; then
+        elif echo "$RCCL_OUT" | grep -qiE "via P2P/(IPC|direct pointer|CUMEM|direct)|via P2P"; then
             RCCL_RESULT="PASS"
-            echo "  RCCL P2P AllReduce: PASS (P2P/IPC transport confirmed)"
+            echo "  RCCL P2P AllReduce: PASS (P2P transport confirmed)"
         else
             RCCL_RESULT="INCONCLUSIVE"
             echo "  RCCL P2P AllReduce: INCONCLUSIVE (exit 0, but no explicit P2P transport logs observed)"
