@@ -36,7 +36,7 @@ If any checks fail, follow the troubleshooting procedures below.
 ## 2. Issue: TransferBench / HIP IPC Falls Back to Host Memory
 
 ### Symptoms
-- TransferBench bidirectional bandwidth is capped at ~2.5–3.0 GB/s.
+- TransferBench peer bandwidth is substantially lower than the validated direct-P2P result.
 - `hipDeviceCanAccessPeer()` returns `0`.
 - Kernel logs contain messages rejecting P2PDMA distance calculation.
 
@@ -59,7 +59,7 @@ The running kernel does not have the Intel Broadwell Host Bridge (`8086:6f00`) i
 ## 3. Issue: RCCL Falls Back to `PATH_SYS`
 
 ### Symptoms
-- `rccl-tests` reports AllReduce bus bandwidth degraded to host shared memory rates (e.g. ~1.8–2.8 GB/s via SHM fallback) instead of full direct peer bandwidth (~9.49 GB/s).
+- `rccl-tests` reports AllReduce bus bandwidth degraded to host shared memory rates (via SHM fallback) instead of full direct peer bandwidth (~9.49 GB/s).
 - With `NCCL_DEBUG=INFO`, logs output:
   ```text
   Channel 00 : 0[0] -> 1[1] [receive] via NET/Socket or Host memory
@@ -132,6 +132,6 @@ If `SrcValid+`, `TransBlk+`, or `ReqRedir+` are enabled, ACS may prevent peer-to
 Before deploying production distributed workloads, verify:
 - [ ] `./scripts/diagnose.sh --full` reports `DIRECT_P2P_READY = YES` (default mode reports `INCONCLUSIVE` until active peer transfers are run).
 - [ ] `./scripts/run-transferbench.sh` achieves ~10.29 GB/s per-direction unidirectional peer throughput.
-- [ ] `./scripts/check-hip-ipc.sh` completes 100% PASS with 0 memory errors.
-- [ ] `./scripts/run-rccl.sh` achieves ~9.49 GB/s AllReduce bus bandwidth.
+- [ ] `./scripts/check-hip-ipc.sh --binary <path-to-hip-ipc-test>` completes 100% PASS with 0 memory errors (the historical test binary is an external dependency not distributed in v0.1; omitting `--binary` reports SKIP / INCONCLUSIVE).
+- [ ] `./scripts/run-rccl.sh --full` achieves ~9.49 GB/s AllReduce bus bandwidth (large message reproduction; `./scripts/run-rccl.sh` performs a quick 64 MiB smoke test).
 - [ ] `./scripts/collect-errors.sh` confirms 0 AER / DMAR / amdgpu errors.

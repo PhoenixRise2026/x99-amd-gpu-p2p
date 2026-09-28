@@ -22,9 +22,9 @@ All performance figures below are strictly locked to verifiable raw test evidenc
 
 | Benchmark | Stock Baseline | Direct P2P (This Repo) | Metric Description | Raw Evidence Source |
 | :--- | :--- | :--- | :--- | :--- |
-| **TransferBench P2P (SDMA/Push)** | Fallback / Rejected | **10.29 GB/s** | Per-direction unidirectional bandwidth | `examples/broadwell-r9700/transferbench.txt` |
+| **TransferBench P2P (SDMA/Push)** | Not included in public evidence | **10.29 GB/s** | Per-direction unidirectional bandwidth | `examples/broadwell-r9700/transferbench.txt` |
 | **RCCL Ring AllReduce (256–1024 MiB)**| Fallback to SHM | **9.49 GB/s** | Bus bandwidth ($B_{\text{bus}} = B_{\text{alg}}$) | `examples/broadwell-r9700/rccl.txt` |
-| **HIP IPC Cross-Process Sharing** | Fallback / Rejected | **Direct DMA-BUF Map** | 1M, 16M, 64M bidirectional correctness | `examples/broadwell-r9700/hip-ipc.txt` |
+| **HIP IPC Cross-Process Sharing** | Not included in public evidence | **Direct DMA-BUF Map** | 1M, 16M, 64M bidirectional correctness | `examples/broadwell-r9700/hip-ipc.txt` |
 | **SGLang Qwen3.8 TP2 (C=1 Decode)** | 30.93 tok/s (via SHM) | **31.28 tok/s** (Direct P2P) | Single-request autoregressive decode | `results/x99-r9700-qwen38.md` |
 | **SGLang Qwen3.8 TP2 (C=4 Decode)** | 69.41 tok/s (via SHM) | **71.10 tok/s** (Direct P2P) | Concurrency 4 aggregate decode | `results/x99-r9700-qwen38.md` |
 | **Kernel Bus Stability** | 0 errors | **0 errors** | Zero AER errors, zero DMAR faults | `examples/broadwell-r9700/kernel-errors.txt` |

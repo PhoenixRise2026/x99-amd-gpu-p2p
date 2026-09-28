@@ -110,8 +110,11 @@ With this patch, `NCCL_P2P_LEVEL=PHB` successfully restores `p2pLevel = PATH_PHB
 Collective AllReduce performance was evaluated on the reference dual AMD R9700 system using the patched RCCL runtime:
 
 ```bash
-# Execute benchmark via the automated script:
+# Execute quick smoke test (up to 64 MiB):
 ./scripts/run-rccl.sh
+
+# Reproduce full published benchmark table (up to 1024 MiB, ~9.49 GB/s plateau):
+./scripts/run-rccl.sh --full
 ```
 
 ### Verified Empirical Performance (Raw Evidence: `rccl.txt`)

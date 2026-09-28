@@ -254,6 +254,114 @@ fi
 echo "  HIP_IPC: $HIP_IPC_RESULT"
 echo
 
+parse_transferbench_matrix() {
+    awk '
+function parse_cell(val) {
+    gsub(/[ \t\r\n]/, "", val);
+    if (val ~ /^[0-9]+(\.[0-9]+)?$/ && (val + 0) > 0) return 1;
+    return 0;
+}
+BEGIN {
+    peer = 0; self = 0; cpu = 0; num_dst = 0; in_mat = 0;
+    list_s = -1; list_d = -1; in_list = 0;
+}
+# Format 1: Matrix Header (e.g. "SRC+EXE\DST    GPU 00    GPU 01")
+/SRC.*DST/ {
+    in_mat = 1; num_dst = 0;
+    line = $0;
+    p = 1;
+    while (match(substr(line, p), /(GPU|CPU)[ \t]*([0-9]+)/)) {
+        match_str = substr(line, p + RSTART - 1, RLENGTH);
+        num_dst++;
+        if (match_str ~ /^GPU/) dst_type[num_dst] = "GPU";
+        else dst_type[num_dst] = "CPU";
+        sub(/^(GPU|CPU)[ \t]*/, "", match_str);
+        dst_id[num_dst] = match_str + 0;
+        p += RSTART + RLENGTH - 1;
+    }
+    next;
+}
+# Format 1: Matrix Row (e.g. "GPU 00 -> N/A 10.29")
+in_mat && /^[ \t]*(GPU|CPU)[ \t]*[0-9]+[ \t]*->/ {
+    line = $0;
+    arrow_pos = index(line, "->");
+    prefix = substr(line, 1, arrow_pos - 1);
+    data = substr(line, arrow_pos + 2);
+
+    src_type = (prefix ~ /GPU/) ? "GPU" : "CPU";
+    sub(/^[ \t]*(GPU|CPU)[ \t]*/, "", prefix);
+    src_id = prefix + 0;
+
+    n = split(data, cells);
+    for (i = 1; i <= n && i <= num_dst; i++) {
+        if (parse_cell(cells[i])) {
+            if (src_type == "GPU" && dst_type[i] == "GPU") {
+                if (src_id != dst_id[i]) peer++;
+                else self++;
+            } else {
+                cpu++;
+            }
+        }
+    }
+    next;
+}
+# Format 2: CSV format (e.g. "GPU0,GPU1,GPU0,67108864,0.0065,10.29")
+/^[ \t]*(GPU|CPU)[0-9]+,[ \t]*(GPU|CPU)[0-9]+/ {
+    n_f = split($0, f, ",");
+    s_type = (f[1] ~ /GPU/) ? "GPU" : "CPU";
+    d_type = (f[2] ~ /GPU/) ? "GPU" : "CPU";
+    sub(/^[ \t]*(GPU|CPU)/, "", f[1]); s_id = f[1] + 0;
+    sub(/^[ \t]*(GPU|CPU)/, "", f[2]); d_id = f[2] + 0;
+    for (i = 3; i <= n_f; i++) {
+        if (parse_cell(f[i])) {
+            if (s_type == "GPU" && d_type == "GPU") {
+                if (s_id != d_id) peer++;
+                else self++;
+            } else {
+                cpu++;
+            }
+        }
+    }
+    next;
+}
+# Format 3: List style header
+/(dma|push|pull)_[0-9]+_to_[0-9]+/ || /Direction:[ \t]*GPU[ \t]*[0-9]+[ \t]*->[ \t]*GPU[ \t]*[0-9]+/ {
+    in_list = 1;
+    if (match($0, /GPU[ \t]*([0-9]+)[ \t]*->[ \t]*GPU[ \t]*([0-9]+)/)) {
+        str = substr($0, RSTART, RLENGTH);
+        sub(/GPU[ \t]*/, "", str);
+        list_s = substr(str, 1, index(str, "->") - 1) + 0;
+        sub(/.*->[ \t]*GPU[ \t]*/, "", str);
+        list_d = str + 0;
+    } else if (match($0, /(dma|push|pull)_([0-9]+)_to_([0-9]+)/)) {
+        str = substr($0, RSTART, RLENGTH);
+        sub(/^(dma|push|pull)_/, "", str);
+        list_s = substr(str, 1, index(str, "_to_") - 1) + 0;
+        sub(/.*_to_/, "", str);
+        list_d = str + 0;
+    }
+}
+# Format 3: List style bandwidth line
+in_list && /([0-9]+\.[0-9]+)[ \t]*GB\/s/ {
+    if (match($0, /([0-9]+\.[0-9]+)[ \t]*GB\/s/)) {
+        bw = substr($0, RSTART, RLENGTH);
+        sub(/[ \t]*GB\/s/, "", bw);
+        if ((bw + 0) > 0) {
+            if (list_s >= 0 && list_d >= 0) {
+                if (list_s != list_d) peer++;
+                else self++;
+            }
+        }
+    }
+}
+END {
+    if (peer > 0) print "PASS";
+    else if (self > 0 || cpu > 0) print "INCONCLUSIVE";
+    else print "FAIL";
+}
+'
+}
+
 if [[ -n "${TEST_MOCK_TRANSFERBENCH:-}" ]]; then
     TB_RESULT="$TEST_MOCK_TRANSFERBENCH"
     echo "  [TEST MOCK] TransferBench Result: $TB_RESULT"
@@ -281,18 +389,18 @@ else
         if [[ $TB_RET -ne 0 ]] || echo "$TB_OUT" | grep -qiE "No valid transfers|error|failed"; then
             TB_RESULT="FAIL"
             echo "  TransferBench execution: FAIL"
-        elif echo "$TB_OUT" | grep -qiE "(GPU\s*0\s*->\s*GPU\s*1|GPU\s*1\s*->\s*GPU\s*0|GPU0\s*->\s*GPU1|GPU1\s*->\s*GPU0|dma_[0-9]+_to_[0-9]+|push_[0-9]+_to_[0-9]+|pull_[0-9]+_to_[0-9]+)" && echo "$TB_OUT" | grep -qE "[0-9]+\.[0-9]+\s*GB/s"; then
-            # Verify distinct GPUs (reject self-transfers like dma_0_to_0)
-            if echo "$TB_OUT" | grep -qiE "(dma_0_to_0|push_0_to_0|pull_0_to_0|dma_1_to_1|push_1_to_1|pull_1_to_1|GPU\s*0\s*->\s*GPU\s*0|GPU\s*1\s*->\s*GPU\s*1)" && ! echo "$TB_OUT" | grep -qiE "(GPU\s*0\s*->\s*GPU\s*1|GPU\s*1\s*->\s*GPU\s*0|GPU0\s*->\s*GPU1|GPU1\s*->\s*GPU0|dma_0_to_1|push_0_to_1|pull_0_to_1|dma_1_to_0|push_1_to_0|pull_1_to_0)"; then
-                TB_RESULT="INCONCLUSIVE"
-                echo "  TransferBench execution: INCONCLUSIVE (only self-transfers detected)"
-            else
+        else
+            TB_PARSE=$(echo "$TB_OUT" | parse_transferbench_matrix)
+            if [[ "$TB_PARSE" == "PASS" ]]; then
                 TB_RESULT="PASS"
                 echo "  TransferBench execution: PASS (Peer GPU transfers measured)"
+            elif [[ "$TB_PARSE" == "INCONCLUSIVE" ]]; then
+                TB_RESULT="INCONCLUSIVE"
+                echo "  TransferBench execution: INCONCLUSIVE (only self-transfers or host/CPU transfers detected)"
+            else
+                TB_RESULT="FAIL"
+                echo "  TransferBench execution: FAIL (no valid peer transfers detected)"
             fi
-        else
-            TB_RESULT="INCONCLUSIVE"
-            echo "  TransferBench execution: INCONCLUSIVE (no explicit peer GPU bandwidth table detected)"
         fi
     else
         echo "  [SKIP] TransferBench binary not found at default paths (EXTERNAL_DEPENDENCY)."

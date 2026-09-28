@@ -41,7 +41,7 @@ All benchmark data in this case study is strictly locked to the verified empiric
 
 ## Verified Benchmark Results
 
-### Test 1: Single Request Decode (Prompt: 369 tokens, Generation: 256 tokens)
+### Test 1: Single Request Decode (Prompt: 193 tokens, Generation: 512 tokens)
 
 | Metric | Stock (via SHM Staging) | Direct P2P (PCIe Host Bridge Direct) | Delta |
 | :--- | :---: | :---: | :---: |
@@ -66,7 +66,7 @@ All benchmark data in this case study is strictly locked to the verified empiric
 
 1. **Transport Mechanism Verification**:
    - Under stock RCCL, `isAllDirectP2p = 0` forced all TP=2 AllReduce collective tensors through host memory bounce buffers (`via SHM/direct/direct`).
-   - Under patched RCCL with `NCCL_P2P_LEVEL=PHB`, `isAllDirectP2p = 1` routed AllReduce directly across Root Ports through the host bridge (`via P2P/IPC`), cutting individual collective barrier latency from ~0.9 ms to ~0.24 ms per invocation.
+   - Under patched RCCL with `NCCL_P2P_LEVEL=PHB`, `isAllDirectP2p = 1` routed AllReduce directly across Root Ports through the host bridge (`via P2P/IPC`), reducing collective communication overhead and eliminating host memory bouncing.
 
 2. **Compute-Bound vs Communication-Bound Behavior**:
    - Single-request autoregressive decode is predominantly memory-bandwidth bound within each GPU (reading model weights from VRAM), so inter-GPU AllReduce accounts for a modest fraction of total token latency.

@@ -41,7 +41,7 @@ Pass an existing external HIP IPC validation binary:
 ```bash
 ./scripts/check-hip-ipc.sh --binary /path/to/hip_ipc_binary
 ```
-If no binary is supplied or found, the script exits cleanly with code `2` (`SKIP`).
+If no binary is supplied or found, the script exits cleanly with code `2` (`SKIP` / `INCONCLUSIVE`). Note: The historical HIP IPC reproducer binary/source is not distributed in v0.1.
 
 ### Verified Test Output (Excerpt from `examples/broadwell-r9700/hip-ipc.txt`)
 

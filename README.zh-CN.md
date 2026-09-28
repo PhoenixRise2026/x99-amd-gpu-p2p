@@ -22,9 +22,9 @@
 
 | 基准测试 | 原生基准 (Stock Baseline) | 直接 P2P (本项目) | 指标说明 | 原始证据来源 |
 | :--- | :--- | :--- | :--- | :--- |
-| **TransferBench P2P (SDMA/Push)** | 回退 / 被拒绝 | **10.29 GB/s** | 单向传输带宽 | `examples/broadwell-r9700/transferbench.txt` |
+| **TransferBench P2P (SDMA/Push)** | 公开证据中未包含 | **10.29 GB/s** | 单向传输带宽 | `examples/broadwell-r9700/transferbench.txt` |
 | **RCCL Ring AllReduce (256–1024 MiB)** | 回退至 SHM | **9.49 GB/s** | 总线带宽 ($B_{\text{bus}} = B_{\text{alg}}$) | `examples/broadwell-r9700/rccl.txt` |
-| **HIP IPC 跨进程共享** | 回退 / 被拒绝 | **Direct DMA-BUF Map** | 1M、16M、64M 双向正确性验证 | `examples/broadwell-r9700/hip-ipc.txt` |
+| **HIP IPC 跨进程共享** | 公开证据中未包含 | **Direct DMA-BUF Map** | 1M、16M、64M 双向正确性验证 | `examples/broadwell-r9700/hip-ipc.txt` |
 | **SGLang Qwen3.8 TP2 (C=1 解码)** | 30.93 tok/s (via SHM) | **31.28 tok/s** (Direct P2P) | 单请求自回归解码吞吐 | `results/x99-r9700-qwen38.md` |
 | **SGLang Qwen3.8 TP2 (C=4 解码)** | 69.41 tok/s (via SHM) | **71.10 tok/s** (Direct P2P) | 并发 4 聚合解码吞吐 | `results/x99-r9700-qwen38.md` |
 | **内核总线稳定性** | 0 次错误 | **0 次错误** | 零 AER 错误，零 DMAR 故障 | `examples/broadwell-r9700/kernel-errors.txt` |

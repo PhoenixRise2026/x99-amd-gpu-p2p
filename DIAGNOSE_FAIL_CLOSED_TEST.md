@@ -46,3 +46,21 @@ TEST_MODE = YES
 1. Missing explicit active tests in default mode does not emit `DIRECT_P2P_READY = YES`.
 2. Unconfirmed or missing IOMMU translation does not assume Translated mode.
 3. Test mocks cannot bypass production gates to emit `DIRECT_P2P_READY = YES`.
+
+---
+
+## TransferBench Real Output Parser Fixtures (Cases TB-A to TB-F)
+
+| Case | Scenario | Injected TransferBench Output | Expected TB Result | Actual Result | Status |
+| :--- | :--- | :--- | :---: | :---: | :---: |
+| **TB-A** | Standard matrix with GPU0/GPU1 off-diagonal | Header has GPU 00/01; `GPU 00 -> N/A 10.29`, `GPU 01 -> 10.27 N/A` | `PASS` | `PASS` | **PASS** |
+| **TB-B** | CPU->GPU only (no GPU peer transfers) | `CPU 00 -> 4.50 4.50` | `INCONCLUSIVE` | `INCONCLUSIVE` | **PASS** |
+| **TB-C** | GPU self-transfer only (GPU 00 -> GPU 00) | `GPU 00 -> 20.00 N/A` | `INCONCLUSIVE` | `INCONCLUSIVE` | **PASS** |
+| **TB-D** | Matrix all N/A | `GPU 00 -> N/A N/A`, `GPU 01 -> N/A N/A` | `FAIL` | `FAIL` | **PASS** |
+| **TB-E** | Header contains GB/s, cells are bare numbers | `GPU 00 -> ... 10.29`, `GPU 01 -> 10.27 ...` | `PASS` | `PASS` | **PASS** |
+| **TB-F** | Reference multi-line list log | `examples/broadwell-r9700/transferbench.txt` | `PASS` | `PASS` | **PASS** |
+
+### Parser Guarantees Confirmed
+1. `TRANSFERBENCH_REAL_OUTPUT_PARSER = PASS`
+2. `TRANSFERBENCH_CPU_FALSE_POSITIVE_FIXED = YES`: CPU-only transfers cannot evaluate to PASS.
+3. `TRANSFERBENCH_MATRIX_FALSE_NEGATIVE_FIXED = YES`: Cells without verbatim `GB/s` correctly resolve off-diagonal peer bandwidth.
