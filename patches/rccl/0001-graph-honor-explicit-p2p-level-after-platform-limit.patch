@@ -1,0 +1,54 @@
+From 0d2c4fd4c5ea8aa96b4ac4eb468fb4146ab2c921 Mon Sep 17 00:00:00 2001
+From: Reference System Maintainer <reference-maintainer@local>
+Date: Mon, 15 Sep 2026 00:10:00 +0000
+Subject: [PATCH] graph: honor explicit p2p level override after platform limit
+
+In upstream RCCL, ncclGetUserP2pLevel(&p2pLevel) was queried before
+evaluating platform and architecture constraints:
+  if (p2pLevel == PATH_SYS) {
+    p2pLevel = PATH_PXB;
+  }
+Because the SYS -> PXB demotion executes after reading the environment,
+an explicit user configuration such as NCCL_P2P_LEVEL=SYS (or PHB/5)
+was unconditionally clamped back down to PATH_PXB (level 3).
+
+On systems where dual GPUs reside across distinct root ports under the
+same host bridge (PATH_PHB / PATH_SYS), this unconditional clamping
+prevented direct P2P/IPC transport and forced RCCL to fall back to SHM
+staging, despite hardware and kernel support being fully active.
+
+Move ncclGetUserP2pLevel(&p2pLevel) to execute after the default
+PATH_SYS -> PATH_PXB clamp, ensuring explicit user override requests
+take precedence.
+
+Signed-off-by: Reference System Maintainer <reference-maintainer@local>
+---
+ src/graph/paths.cc | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/src/graph/paths.cc b/src/graph/paths.cc
+index ee8cbcd..b49593e 100644
+--- a/src/graph/paths.cc
++++ b/src/graph/paths.cc
+@@ -322,9 +322,6 @@ ncclResult_t ncclTopoCheckP2p(struct ncclComm* comm, struct ncclTopoSystem* syst
+   // In general, use P2P whenever we can.
+   int p2pLevel = PATH_SYS;
+ 
+-  // User override
+-  NCCLCHECK(ncclGetUserP2pLevel(&p2pLevel));
+-
+   // Don't use P2P through ARM CPUs
+   int arch, vendor, model;
+   NCCLCHECK(ncclTopoCpuType(system, &arch, &vendor, &model));
+@@ -336,6 +333,9 @@ ncclResult_t ncclTopoCheckP2p(struct ncclComm* comm, struct ncclTopoSystem* syst
+     p2pLevel = PATH_PXB;
+   }
+ 
++  // User override
++  NCCLCHECK(ncclGetUserP2pLevel(&p2pLevel));
++
+   // Compute the PCI distance and compare with the p2pLevel.
+   if (path->type <= p2pLevel) *p2p = 1;
+ 
+-- 
+2.43.0
