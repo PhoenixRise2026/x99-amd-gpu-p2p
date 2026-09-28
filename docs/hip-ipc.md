@@ -19,8 +19,8 @@ For direct peer memory operations to function without routing through host RAM b
 Under modern ROCm (ROCm 6.x and 7.x):
 - The AMD KFD (Kernel Fusion Driver) and AMDGPU kernel driver use Linux DMA-BUF export/import mechanisms backed by the kernel's PCIe P2PDMA subsystem (`drivers/pci/p2pdma.c`).
 - When a memory handle is exported and imported across processes on different GPUs, AMDGPU attaches the DMA-BUF to the target device.
-- If the PCIe path between the two devices is permitted by the kernel (`pci_p2pdma_distance_many()` returns `PCI_P2PDMA_MAP_THROUGH_HOST_BRIDGE`), the BAR memory is mapped directly into the peer GPU's virtual address space (via GPU VM page tables).
-- If the host bridge is not whitelisted, the kernel rejects direct P2P mapping, forcing the runtime to fall back to host memory copies (HIP staging buffers or socket/IPC pipes).
+- If the PCIe path between the two devices is permitted by the kernel (`pci_p2pdma_distance_many()` returns a valid distance $\ge 0$ and the mapping mode evaluates to `PCI_P2PDMA_MAP_THRU_HOST_BRIDGE` or `PCI_P2PDMA_MAP_BUS_ADDR`), the BAR memory is mapped directly into the peer GPU's virtual address space (via GPU VM page tables).
+- If the host bridge is not whitelisted, the mapping type evaluates to `PCI_P2PDMA_MAP_NOT_SUPPORTED` and the kernel rejects direct P2P mapping, forcing the runtime to fall back to host memory copies (HIP staging buffers or socket/IPC pipes).
 
 ---
 

@@ -6,7 +6,7 @@
 
 ## Overview
 
-This repository provides verified patches, diagnostic scripts, architecture documentation, and empirical benchmarks enabling **direct hardware Peer-to-Peer (P2P) PCIe DMA transfers** between AMD GPUs across Intel Broadwell-EP (X99) Root Complexes.
+This repository provides verified patches, diagnostic scripts, architecture documentation, and empirical benchmarks enabling **direct hardware Peer-to-Peer (P2P) PCIe DMA transfers** between AMD GPUs across different PCIe Root Ports within the same Intel Broadwell-EP host-bridge / Root Complex domain.
 
 Historically, Linux kernel PCIe P2PDMA allowed Haswell-EP host bridges (`8086:2f00` / `8086:2f01`) to perform peer DMA across root ports, but the Broadwell-EP successor (`8086:6f00`) was omitted from the upstream whitelist. Consequently, multi-GPU AMD ROCm workloads (such as distributed LLM inference with SGLang / vLLM using RCCL) were marked `PCI_P2PDMA_MAP_NOT_SUPPORTED`, forcing inter-GPU communication to fall back to host shared memory staging (`via SHM/direct/direct`).
 
@@ -100,8 +100,8 @@ chmod +x scripts/*.sh
 
 By default, `diagnose.sh` inspects platform prerequisites (CPU socket, host bridge `8086:6f00`, distinct root ports, IOMMU translated mode, link parameters, and error counters). If active peer transfers have not yet been executed, it reports:
 ```text
-OVERALL: P2P_PREREQUISITES = PASS
-OVERALL: DIRECT_P2P_READY = INCONCLUSIVE (run with --full to execute peer benchmarks)
+P2P_PREREQUISITES = PASS
+DIRECT_P2P_READY = INCONCLUSIVE
 ```
 
 To run active peer benchmarks (TransferBench, HIP IPC, and RCCL) and gate full P2P readiness:
@@ -113,18 +113,17 @@ To run active peer benchmarks (TransferBench, HIP IPC, and RCCL) and gate full P
 
 ## Applying the Kernel Patch
 
-### Validated Patch (Kernel 6.8.x)
+### Validated Patch (`Ubuntu-6.8.0-139.139`)
 
-If running Ubuntu 24.04 or standard Linux 6.8.x:
+This patch is validated specifically on `Ubuntu-6.8.0-139.139` (Kernel `6.8.12`, Git SHA: `78d7d3da9419bebf9c91d65c6268db56a705445e`). Other kernel versions require rebasing and independent validation:
 ```bash
-cd /usr/src/linux-source-6.8.0 # or your kernel tree
-git apply /path/to/x99-amd-gpu-p2p/patches/linux/validated/0001-pci-p2pdma-add-broadwell-6f00-host-bridge.patch
+git apply patches/linux/validated/0001-pci-p2pdma-add-broadwell-6f00-host-bridge.patch
 ```
 
 ### Upstream Linux Mainline Candidate
 
-A candidate patch prepared for upstream `torvalds/linux` master is provided at:
-`patches/linux/upstream/0001-PCI-P2PDMA-Allow-P2PDMA-through-Intel-Broadwell-host-bridge.patch`.
+A candidate patch prepared for upstream `torvalds/linux` master is provided as a unified diff at:
+`patches/linux/upstream/0001-broadwell-6f00-p2pdma-candidate.diff`.
 - Rebased on `torvalds/linux` master commit `72d3fcf802c45d00b300f25b848a93c3a2bd7c7e`.
 - Passed `checkpatch.pl --strict` (0 errors, 0 warnings).
 - Maintainers identified via `get_maintainer.pl`.
@@ -132,14 +131,20 @@ A candidate patch prepared for upstream `torvalds/linux` master is provided at:
 
 ---
 
-## Configuring RCCL for Direct P2P
+## Configuring RCCL for Direct P2P: The Two-Gate Model
 
-In ROCm 7.2.0+, export the P2P level to allow transfers across the PCIe Host Bridge:
+Direct P2P AllReduce requires clearing two independent gates (validated on RCCL `2.27.7` / `rocm-7.2.0` base):
 
-```bash
-export NCCL_P2P_LEVEL=PHB
-export NCCL_DEBUG=INFO
-```
+1. **Gate A (Kernel Subsystem)**:
+   - Intel Broadwell-EP `8086:6f00` must be present in the Linux kernel `pci_p2pdma_whitelist[]`.
+   - Intel VT-d IOMMU must operate in Translated mode (`DMA-FQ`).
+2. **Gate B (RCCL User-Space Graph)**:
+   - In stock RCCL 2.27.7, hardcoded Intel x86 platform heuristics unconditionally demoted `p2pLevel` to `PATH_PXB`, ignoring user environment variables.
+   - The included RCCL patch (`patches/rccl/0001-graph-honor-explicit-p2p-level-after-platform-limit.patch`) ensures that setting `NCCL_P2P_LEVEL=PHB` successfully grants P2P eligibility for Root Port traversal:
+   ```bash
+   export NCCL_P2P_LEVEL=PHB
+   export NCCL_DEBUG=INFO
+   ```
 
 ---
 

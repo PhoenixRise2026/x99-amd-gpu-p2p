@@ -1,6 +1,3 @@
-From 78d7d3da9419bebf9c91d65c6268db56a705445e Mon Sep 17 00:00:00 2001
-From: Open Source Contributor <contributor@example.org>
-Date: Mon, 14 Sep 2026 02:30:00 +0000
 Subject: [PATCH] PCI/P2PDMA: add Intel Broadwell-EP 0x6f00 host bridge to whitelist
 
 Add device ID 0x6f00 (Intel Xeon E7 v4 / Xeon E5 v4 DMI2 Host Bridge)
@@ -28,4 +25,3 @@ index ec53b2b0d..6eacb25a5 100644
  	{PCI_VENDOR_ID_INTEL,	0x2030, 0},
  	{PCI_VENDOR_ID_INTEL,	0x2031, 0},
 -- 
-2.43.0

@@ -12,9 +12,9 @@ This project contains documentation, diagnostic scripts, patch files, and saniti
    - Modifications Copyright (c) 2019-2026 Advanced Micro Devices, Inc. All rights reserved.
    - Modifications Copyright (c) Microsoft Corporation.
    - Licensed under BSD-3-Clause / MIT.
-3. **SGLang Patches and Kernel Extensions**:
-   - Derived from SGLang and community RDNA4 patchsets.
-   - Copyright (c) 2023-2026 SGLang Team & Contributors.
-   - Licensed under Apache-2.0.
+3. **SGLang Case-Study References**:
+   - Case-study documentation references external SGLang and community RDNA4 patchsets (e.g. Patch 065). This repository does NOT copy or distribute third-party SGLang source code (Copied code = NO).
+   - Upstream references: SGLang Team & Matt Bucci (Apache-2.0).
 
+All original documentation and diagnostic scripts authored in this repository are licensed under MIT (see `LICENSE`).
 See `LICENSES/README.md` and `third_party/README.md` for complete licensing and attribution details.

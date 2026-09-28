@@ -34,3 +34,6 @@ SUBJECT:
 
 BODY:
 See UPSTREAM_COMMIT_MESSAGE.txt
+
+DIFF FILE:
+0001-broadwell-6f00-p2pdma-candidate.diff

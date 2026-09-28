@@ -16,7 +16,6 @@ This repository contains materials under different open-source licenses based on
 - **Applies to**: `patches/rccl/**/*.patch`
 - **Origin**: AMD ROCm RCCL project (`src/graph/paths.cc`).
 
-### 4. SGLang and Related Community Patches
-- **License**: Apache License 2.0 (`Apache-2.0`)
-- **Applies to**: `docs/sglang-qwen38-case-study.md` patch descriptions.
-- **Origin**: SGLang and community RDNA4 patch repositories.
+### 4. SGLang Case-Study References
+- Case-study documentation references external SGLang and community RDNA4 patches (e.g. Patch 065); this repository does NOT bundle or copy third-party SGLang source files (`Copied code = NO`).
+- **Upstream License**: Apache License 2.0 (`Apache-2.0`).

@@ -49,7 +49,7 @@
    - P2P memory traffic traverses the internal CPU switch ring without staging in host DDR4 RAM.
 2. **IOMMU Address Translation (Intel VT-d Translated)**:
    - The system operates with VT-d enabled in Translated mode (`DMA-FQ`).
-   - Peer memory requests are remapped via `dma_map_resource()` into compact IOVA space (< 4 GiB), ensuring that physical 46-bit BAR addresses are accessible within the stock 44-bit DMA mask of AMDGPU.
+   - Peer memory requests are remapped via `dma_map_resource()` into compact IOVA space (< 4 GiB), ensuring that physical 46-bit BAR addresses are accessible within the stock 44-bit DMA mask of AMDGPU. *(Observed during private validation; raw trace not distributed in v0.1. Note that Translated mode was required on this specific reference testbed due to 64-bit BAR placement; requirements on other X99 systems depend on motherboard BAR mapping.)*
 3. **P2PDMA Whitelist Clearance (`p2pdma.c`)**:
    - The Linux PCI core verifies that Host Bridge `8086:6f00` is whitelisted.
    - `calc_map_type_and_dist()` returns `PCI_P2PDMA_MAP_THRU_HOST_BRIDGE` rather than `PCI_P2PDMA_MAP_NOT_SUPPORTED`, allowing DMA-BUF mapping across root ports.

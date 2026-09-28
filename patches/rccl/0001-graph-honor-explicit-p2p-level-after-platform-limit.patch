@@ -1,6 +1,3 @@
-From 0d2c4fd4c5ea8aa96b4ac4eb468fb4146ab2c921 Mon Sep 17 00:00:00 2001
-From: Open Source Contributor <contributor@example.org>
-Date: Mon, 15 Sep 2026 00:10:00 +0000
 Subject: [PATCH] graph: honor explicit p2p level override after platform limit
 
 In upstream RCCL (src/graph/paths.cc), ncclGetUserP2pLevel(&p2pLevel)
@@ -10,10 +7,10 @@ was queried before evaluating Intel x86 architecture constraints:
   }
 Because the Intel x86 platform clamp executed after reading the environment,
 an explicit user configuration such as NCCL_P2P_LEVEL=PHB
-was unconditionally clamped back down to PATH_PXB (level 3).
+was unconditionally clamped back down to PATH_PXB (distance 5).
 
 On systems where dual GPUs reside across distinct root ports under the
-same host bridge (physical path PATH_PHB), this unconditional clamping
+same host bridge (physical path PATH_PHB, distance 8), this unconditional clamping
 prevented direct P2P eligibility (PATH_PHB > PATH_PXB) and forced
 RCCL's transport selection to fall back to SHM staging, despite
 hardware and kernel P2PDMA support being fully active.
@@ -49,4 +46,3 @@ index ee8cbcd..b49593e 100644
    if (path->type <= p2pLevel) *p2p = 1;
  
 -- 
-2.43.0

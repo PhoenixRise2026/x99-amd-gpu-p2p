@@ -33,10 +33,12 @@ These physical addresses require 46 physical address bits ($\text{bit 45} = 1$).
 
 ### The VT-d Translated Mode Solution (`DMA-FQ`)
 * On the reference system, Intel VT-d is enabled in **Translated mode** (the default Linux behavior when `iommu=pt` is absent).
+* Translated mode was required on this specific reference testbed due to the platform firmware allocating 64-bit BARs at physical 46-bit addresses; this is a characteristic of this reference system rather than an invariant requirement across all X99 motherboards.
 * When peer memory is attached via `dma_map_resource()`, the Intel IOMMU translates the target BAR into an IOVA.
 * Dynamic eBPF tracing confirmed that the IOMMU allocator assigns IOVAs within 32-bit address space:
   * GPU0 mapping GPU1 BAR: IOVA returned is `0xfe200000` / `0x8e000000` (32-bit).
   * GPU1 mapping GPU0 BAR: IOVA returned is `0xfe000000` / `0x8d000000` (32-bit).
+  *(Observed during private validation; raw eBPF trace not distributed in v0.1.)*
 * Because $32 \le 44$, all peer DMA transactions fall strictly within the GPU's stock 44-bit DMA mask.
 * **Result**: Zero DMAR faults, zero AER errors, and 100% data integrity with stock AMDGPU driver code.
 

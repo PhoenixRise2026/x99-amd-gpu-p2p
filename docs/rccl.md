@@ -15,23 +15,23 @@ It is essential to distinguish between **topology distance classification** and 
 ### 1. Topology Distance Levels
 RCCL classifies the physical interconnect distance between pairs of GPUs using hierarchical path levels:
 
-| Level | Identifier | Description | Relative Distance |
-| :--- | :--- | :--- | :--- |
-| **LOC** | `PATH_LOC` | Same GPU / loopback | Internal VRAM |
-| **NVL** | `PATH_NVL` | Dedicated high-speed fabric (xGMI / NVLink) | Dedicated interconnect |
-| **PIX** | `PATH_PIX` | Traversal through a single PCIe Switch | Switch-local |
-| **PXB** | `PATH_PXB` | Traversal through multiple PCIe Switches | Multi-switch |
-| **PHB** | `PATH_PHB` | Traversal through PCIe Host Bridge / Root Complex | Host Bridge |
-| **SYS** | `PATH_SYS` | Traversal through system memory / QPI / UPI / NUMA | Inter-socket / System |
+| Level | Identifier | Internal Enum Value | Description |
+| :--- | :--- | :---: | :--- |
+| **LOC** | `PATH_LOC` | 0 | Same GPU / loopback |
+| **NVL** | `PATH_NVL` | 1 | Dedicated high-speed fabric (xGMI / NVLink) |
+| **PIX** | `PATH_PIX` | 3 | Traversal through a single PCIe Switch |
+| **PXB** | `PATH_PXB` | 5 | Traversal through multiple PCIe Switches |
+| **PHB** | `PATH_PHB` | 8 | Traversal through PCIe Host Bridge / Root Complex |
+| **SYS** | `PATH_SYS` | 9 | Traversal at system / inter-socket / fallback distance |
 
-On a single-socket Intel X99 / Broadwell-EP system, GPU 0 (`05:00.0`) and GPU 1 (`08:00.0`) reside under separate Root Ports (`00:02.0` and `00:03.0`) of the same Host Bridge (`00:00.0` `8086:6f00`). Therefore, the physical path distance is **`PATH_PHB`**.
+On a single-socket Intel X99 / Broadwell-EP system, GPU 0 (`05:00.0`) and GPU 1 (`08:00.0`) reside under separate Root Ports (`00:02.0` and `00:03.0`) of the same Host Bridge (`00:00.0` `8086:6f00`). Therefore, the physical path distance is **`PATH_PHB`** (enum value 8).
 
 ### 2. Transport Mechanisms
 - **P2P/IPC**: Direct peer-to-peer DMA over the PCIe bus without copying through host RAM.
 - **SHM**: Host shared memory bounce buffers coordinated by the CPU.
 - **NET**: Network transport (e.g. RoCE, InfiniBand, or sockets).
 
-`PATH_SYS` is not a transport; rather, when direct P2P eligibility is rejected (`*p2p = 0`), RCCL's transport selection engine falls back to `via SHM/direct/direct`.
+`PATH_SYS` (enum value 9) is a topology distance classification, not a transport mechanism. When direct P2P eligibility is rejected (`*p2p = 0`), RCCL's transport selection engine falls back to `via SHM/direct/direct`.
 
 ---
 
@@ -41,7 +41,7 @@ The environment variable `NCCL_P2P_LEVEL` sets the maximum allowable path distan
 ```bash
 export NCCL_P2P_LEVEL=PHB
 ```
-This instructs RCCL that transfers crossing the PCIe Host Bridge (`PATH_PHB`) should be considered eligible for direct P2P transport.
+This instructs RCCL that transfers crossing the PCIe Host Bridge (`PATH_PHB`, value 8) should be considered eligible for direct P2P transport.
 
 ---
 
@@ -64,9 +64,9 @@ In upstream RCCL (`src/graph/paths.cc`), `ncclGetUserP2pLevel(&p2pLevel)` was ca
     p2pLevel = PATH_PXB;
   }
 ```
-Because the Intel x86 clamp unconditionally demoted `p2pLevel` to `PATH_PXB`, an explicit user configuration such as `NCCL_P2P_LEVEL=PHB` was overwritten back to `PATH_PXB` (level 3).
+Because the Intel x86 clamp unconditionally demoted `p2pLevel` to `PATH_PXB` (enum value 5), an explicit user configuration such as `NCCL_P2P_LEVEL=PHB` (enum value 8) was overwritten back to `PATH_PXB` (value 5).
 
-For the physical GPU pair across Root Ports (`path->type = PATH_PHB`), `path->type <= p2pLevel` (`PATH_PHB <= PATH_PXB`) evaluated to false (`*p2p = 0`). Consequently, direct P2P was disabled, and transport selection fell back to SHM staging.
+For the physical GPU pair across Root Ports (`path->type = PATH_PHB`, value 8), `path->type <= p2pLevel` (`8 <= 5`) evaluated to false (`*p2p = 0`). Consequently, direct P2P was disabled, and transport selection fell back to SHM staging.
 
 ### The Fix
 

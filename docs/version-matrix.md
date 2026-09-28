@@ -34,7 +34,7 @@ This document provides the definitive version and revision mapping for all hardw
 | :--- | :--- | :--- | :--- |
 | **Kernel Driver (AMDGPU)**| ROCK DKMS `6.16.13` | Module SHA256: `dfab6f8d6c54fab1658766f469967190a419f6aa09c832352998d1ba95fe88c5` | Stock `DMA_BIT_MASK(44)` |
 | **ROCm Runtime** | `7.2.4` | `dpkg -l rocm-core` / `hipcc` | System ROCm package release |
-| **RCCL Runtime** | `2.27.7` / candidate `2.28.3` | `librccl.so.1.0` (SHA256: `8caa0dfd7a8b504a49864e6bad4b20e4ac326c57731cd627c4985022dbe24d04`)| Patched with PHB user override fix |
+| **RCCL Runtime** | `2.27.7` | `librccl.so.1.0` (SHA256: `8caa0dfd7a8b504a49864e6bad4b20e4ac326c57731cd627c4985022dbe24d04`)| Patched with PHB user override fix |
 | **RCCL Source Base Tag** | `rocm-7.2.0` | Commit `0d2c4fd4c5ea8aa96b4ac4eb468fb4146ab2c921` | Base repository: `https://github.com/ROCm/rccl` |
 | **Triton Runtime** | `3.6.0` | Python package `triton==3.6.0` | **ACTIVE** for attention, GDN, and AWQ GEMM |
 | **AITER Runtime** | None / Absent | `AITER_ACTIVE = NO` | Not installed; not used in validated inference stack |

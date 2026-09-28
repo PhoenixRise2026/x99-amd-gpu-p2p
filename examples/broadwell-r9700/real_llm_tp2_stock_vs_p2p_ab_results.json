@@ -1,0 +1,2565 @@
+{
+  "metadata": {
+    "date": "2026-09-17",
+    "model_path": "/data/ai/models/huggingface/shawnw3i/Qwen3.8-27B-AWQ-MTP",
+    "image_tag": "qwen38-r9700-sglang-awq-tp2-unrep-mlp:v0.5.18",
+    "patched_rccl_path": "/opt/rccl-p2p/build/librccl.so.1.0",
+    "server_url": "http://127.0.0.1:30001"
+  },
+  "stock": {
+    "mode": "stock",
+    "container_name": "sglang-ab-stock",
+    "rccl_logs": "x99-ubuntu:129:129 [0] NCCL INFO Channel 00/02 : 0 1\nx99-ubuntu:129:129 [0] NCCL INFO Channel 01/02 : 0 1\nx99-ubuntu:129:129 [0] NCCL INFO Check P2P Type isAllDirectP2p 0 directMode 0\nx99-ubuntu:130:130 [1] NCCL INFO Channel 00 : 1[8000] -> 0[5000] via SHM/direct/direct comm 0x57c17b212740 nRanks 02\nx99-ubuntu:129:129 [0] NCCL INFO Channel 00 : 0[5000] -> 1[8000] via SHM/direct/direct comm 0x56feaca38cc0 nRanks 02\nx99-ubuntu:129:129 [0] NCCL INFO Channel 01 : 0[5000] -> 1[8000] via SHM/direct/direct comm 0x56feaca38cc0 nRanks 02\nx99-ubuntu:130:130 [1] NCCL INFO Channel 01 : 1[8000] -> 0[5000] via SHM/direct/direct comm 0x57c17b212740 nRanks 02\nx99-ubuntu:130:130 [1] NCCL INFO comm:0x57c17b212740, nRanks:2, nNodes:1, coll channels:2 collnet channels:2, nvls channels:0, p2p channels:8, p2p channels per peer:8\nx99-ubuntu:129:129 [0] NCCL INFO comm:0x56feaca38cc0, nRanks:2, nNodes:1, coll channels:2 collnet channels:2, nvls channels:0, p2p channels:8, p2p channels per peer:8\nx99-ubuntu:130:130 [1] NCCL INFO minNChannels:-2\nx99-ubuntu:129:129 [0] NCCL INFO minNChannels:-2\nx99-ubuntu:130:130 [1] NCCL INFO minNChannels:-2\nx99-ubuntu:129:129 [0] NCCL INFO minNChannels:-2\nx99-ubuntu:129:129 [0] NCCL INFO minNChannels:-2\nx99-ubuntu:129:129 [0] NCCL INFO minNChannels:-2\nx99-ubuntu:129:129 [0] NCCL INFO minNChannels:-2\nx99-ubuntu:129:129 [0] NCCL INFO minNChannels:-2\nx99-ubuntu:130:130 [1] NCCL INFO minNChannels:-2\nx99-ubuntu:129:129 [0] NCCL INFO minNChannels:-2\nx99-ubuntu:129:129 [0] NCCL INFO minNChannels:-2\nx99-ubuntu:130:130 [1] NCCL INFO minNChannels:-2\nx99-ubuntu:130:130 [1] NCCL INFO minNChannels:-2\nx99-ubuntu:130:130 [1] NCCL INFO minNChannels:-2\nx99-ubuntu:130:130 [1] NCCL INFO minNChannels:-2\nx99-ubuntu:130:130 [1] NCCL INFO minNChannels:-2\nx99-ubuntu:130:130 [1] NCCL INFO minNChannels:-2\nx99-ubuntu:130:130 [1] NCCL INFO minNChannels:-2\nx99-ubuntu:130:130 [1] NCCL INFO minNChannels:-2\nx99-ubuntu:130:130 [1] NCCL INFO minNChannels:-2\nx99-ubuntu:130:130 [1] NCCL INFO minNChannels:-2",
+    "telemetry_pre": {
+      "raw": "============================ ROCm System Management Interface ============================\n====================================== Temperature =======================================\nGPU[0]\t\t: Temperature (Sensor edge) (C): 35.0\nGPU[0]\t\t: Temperature (Sensor junction) (C): 35.0\nGPU[0]\t\t: Temperature (Sensor memory) (C): 34.0\n==========================================================================================\n=================================== % time GPU is busy ===================================\nGPU[0]\t\t: GPU use (%): 0\nGPU[1]\t\t: GPU use (%): 0\n==========================================================================================\n================================== End of ROCm SMI Log ===================================",
+      "gpus": [
+        {
+          "edge_temp_c": 35.0,
+          "junction_temp_c": 35.0,
+          "mem_temp_c": 34.0,
+          "gpu_use_pct": 0.0
+        },
+        {
+          "gpu_use_pct": 0.0
+        }
+      ]
+    },
+    "tests": {
+      "test_1_decode": {
+        "decode_tok_s": {
+          "median": 30.93,
+          "min": 30.92,
+          "max": 30.98,
+          "mean": 30.94,
+          "stdev": 0.02,
+          "cv": 0.08
+        },
+        "tpot_ms": {
+          "median": 32.33,
+          "min": 32.28,
+          "max": 32.34,
+          "mean": 32.32,
+          "stdev": 0.02,
+          "cv": 0.07
+        },
+        "ttft_ms": {
+          "median": 262.7,
+          "min": 255.09,
+          "max": 271.28,
+          "mean": 263.23,
+          "stdev": 6.52,
+          "cv": 2.48
+        },
+        "e2e_s": {
+          "median": 16.78,
+          "min": 16.76,
+          "max": 16.79,
+          "mean": 16.78,
+          "stdev": 0.01,
+          "cv": 0.07
+        },
+        "runs": [
+          {
+            "req_id": 0,
+            "prompt_tokens": 193,
+            "completion_tokens": 512,
+            "t_start": 25831.38586766,
+            "t_first": 25831.648568818,
+            "t_end": 25848.163337467,
+            "ttft_ms": 262.7,
+            "decode_time_s": 16.5148,
+            "tpot_ms": 32.32,
+            "decode_tok_s": 30.94,
+            "prefill_tok_s": 734.68,
+            "e2e_s": 16.7775,
+            "output_snippet": "    The  The text  The text you  The text you provided  The "
+          },
+          {
+            "req_id": 0,
+            "prompt_tokens": 193,
+            "completion_tokens": 512,
+            "t_start": 25848.163476652,
+            "t_first": 25848.431393934,
+            "t_end": 25864.925372637,
+            "ttft_ms": 267.92,
+            "decode_time_s": 16.494,
+            "tpot_ms": 32.28,
+            "decode_tok_s": 30.98,
+            "prefill_tok_s": 720.37,
+            "e2e_s": 16.7619,
+            "output_snippet": "    The  The text  The text you  The text you provided  The "
+          },
+          {
+            "req_id": 0,
+            "prompt_tokens": 193,
+            "completion_tokens": 512,
+            "t_start": 25864.925530469,
+            "t_first": 25865.180623002,
+            "t_end": 25881.705188182,
+            "ttft_ms": 255.09,
+            "decode_time_s": 16.5246,
+            "tpot_ms": 32.34,
+            "decode_tok_s": 30.92,
+            "prefill_tok_s": 756.59,
+            "e2e_s": 16.7797,
+            "output_snippet": "    The  The text  The text you  The text you provided  The "
+          },
+          {
+            "req_id": 0,
+            "prompt_tokens": 193,
+            "completion_tokens": 512,
+            "t_start": 25881.705328813,
+            "t_first": 25881.964487692,
+            "t_end": 25898.487204939,
+            "ttft_ms": 259.16,
+            "decode_time_s": 16.5227,
+            "tpot_ms": 32.33,
+            "decode_tok_s": 30.93,
+            "prefill_tok_s": 744.72,
+            "e2e_s": 16.7819,
+            "output_snippet": "    The  The text  The text you  The text you provided  The "
+          },
+          {
+            "req_id": 0,
+            "prompt_tokens": 193,
+            "completion_tokens": 512,
+            "t_start": 25898.487341229,
+            "t_first": 25898.758617665,
+            "t_end": 25915.280694091,
+            "ttft_ms": 271.28,
+            "decode_time_s": 16.5221,
+            "tpot_ms": 32.33,
+            "decode_tok_s": 30.93,
+            "prefill_tok_s": 711.45,
+            "e2e_s": 16.7934,
+            "output_snippet": "    The  The text  The text you  The text you provided  The "
+          }
+        ]
+      },
+      "test_2_prefill": {
+        "1K": {
+          "tier": "1K",
+          "actual_prompt_tokens": 1052,
+          "prefill_tok_s": {
+            "median": 1147.34,
+            "min": 1146.55,
+            "max": 1151.44,
+            "mean": 1148.3,
+            "stdev": 1.97,
+            "cv": 0.17
+          },
+          "ttft_ms": {
+            "median": 916.91,
+            "min": 913.64,
+            "max": 917.53,
+            "mean": 916.14,
+            "stdev": 1.57,
+            "cv": 0.17
+          },
+          "decode_tok_s": {
+            "median": 30.47,
+            "min": 30.25,
+            "max": 30.65,
+            "mean": 30.48,
+            "stdev": 0.16,
+            "cv": 0.52
+          },
+          "e2e_s": {
+            "median": 1.93,
+            "min": 1.93,
+            "max": 1.94,
+            "mean": 1.93,
+            "stdev": 0.01,
+            "cv": 0.28
+          },
+          "runs": [
+            {
+              "req_id": 0,
+              "prompt_tokens": 1052,
+              "completion_tokens": 32,
+              "t_start": 25919.238486438,
+              "t_first": 25920.154055997,
+              "t_end": 25921.171304094,
+              "ttft_ms": 915.57,
+              "decode_time_s": 1.0172,
+              "tpot_ms": 32.81,
+              "decode_tok_s": 30.47,
+              "prefill_tok_s": 1149.01,
+              "e2e_s": 1.9328,
+              "output_snippet": "    Based  Based on  Based on the  Based on the provided  Ba"
+            },
+            {
+              "req_id": 0,
+              "prompt_tokens": 1052,
+              "completion_tokens": 32,
+              "t_start": 25921.171581079,
+              "t_first": 25922.088486811,
+              "t_end": 25923.101565384,
+              "ttft_ms": 916.91,
+              "decode_time_s": 1.0131,
+              "tpot_ms": 32.68,
+              "decode_tok_s": 30.6,
+              "prefill_tok_s": 1147.34,
+              "e2e_s": 1.93,
+              "output_snippet": "    Based  Based on  Based on the  Based on the provided  Ba"
+            },
+            {
+              "req_id": 0,
+              "prompt_tokens": 1052,
+              "completion_tokens": 32,
+              "t_start": 25923.101819242,
+              "t_first": 25924.015459947,
+              "t_end": 25925.034446815,
+              "ttft_ms": 913.64,
+              "decode_time_s": 1.019,
+              "tpot_ms": 32.87,
+              "decode_tok_s": 30.42,
+              "prefill_tok_s": 1151.44,
+              "e2e_s": 1.9326,
+              "output_snippet": "    Based  Based on  Based on the  Based on the provided  Ba"
+            },
+            {
+              "req_id": 0,
+              "prompt_tokens": 1052,
+              "completion_tokens": 32,
+              "t_start": 25925.034683709,
+              "t_first": 25925.951715849,
+              "t_end": 25926.963087642,
+              "ttft_ms": 917.03,
+              "decode_time_s": 1.0114,
+              "tpot_ms": 32.62,
+              "decode_tok_s": 30.65,
+              "prefill_tok_s": 1147.18,
+              "e2e_s": 1.9284,
+              "output_snippet": "    Based  Based on  Based on the  Based on the provided  Ba"
+            },
+            {
+              "req_id": 0,
+              "prompt_tokens": 1052,
+              "completion_tokens": 32,
+              "t_start": 25926.963351001,
+              "t_first": 25927.88088573,
+              "t_end": 25928.905808652,
+              "ttft_ms": 917.53,
+              "decode_time_s": 1.0249,
+              "tpot_ms": 33.06,
+              "decode_tok_s": 30.25,
+              "prefill_tok_s": 1146.55,
+              "e2e_s": 1.9425,
+              "output_snippet": "    Based  Based on  Based on the  Based on the provided  Ba"
+            }
+          ]
+        },
+        "4K": {
+          "tier": "4K",
+          "actual_prompt_tokens": 4130,
+          "prefill_tok_s": {
+            "median": 14630.07,
+            "min": 14162.83,
+            "max": 14989.8,
+            "mean": 14640.79,
+            "stdev": 331.42,
+            "cv": 2.26
+          },
+          "ttft_ms": {
+            "median": 282.3,
+            "min": 275.52,
+            "max": 291.61,
+            "mean": 282.21,
+            "stdev": 6.44,
+            "cv": 2.28
+          },
+          "decode_tok_s": {
+            "median": 29.88,
+            "min": 29.81,
+            "max": 29.97,
+            "mean": 29.89,
+            "stdev": 0.07,
+            "cv": 0.23
+          },
+          "e2e_s": {
+            "median": 1.32,
+            "min": 1.31,
+            "max": 1.33,
+            "mean": 1.32,
+            "stdev": 0.01,
+            "cv": 0.42
+          },
+          "runs": [
+            {
+              "req_id": 0,
+              "prompt_tokens": 4130,
+              "completion_tokens": 32,
+              "t_start": 25936.083429528,
+              "t_first": 25936.368030107,
+              "t_end": 25937.407318723,
+              "ttft_ms": 284.6,
+              "decode_time_s": 1.0393,
+              "tpot_ms": 33.53,
+              "decode_tok_s": 29.83,
+              "prefill_tok_s": 14511.57,
+              "e2e_s": 1.3239,
+              "output_snippet": "    Based  Based on  Based on the  Based on the provided  Ba"
+            },
+            {
+              "req_id": 0,
+              "prompt_tokens": 4130,
+              "completion_tokens": 32,
+              "t_start": 25937.40769853,
+              "t_first": 25937.684699754,
+              "t_end": 25938.722325226,
+              "ttft_ms": 277.0,
+              "decode_time_s": 1.0376,
+              "tpot_ms": 33.47,
+              "decode_tok_s": 29.88,
+              "prefill_tok_s": 14909.68,
+              "e2e_s": 1.3146,
+              "output_snippet": "    Based  Based on  Based on the  Based on the provided  Ba"
+            },
+            {
+              "req_id": 0,
+              "prompt_tokens": 4130,
+              "completion_tokens": 32,
+              "t_start": 25938.72267735,
+              "t_first": 25939.00497267,
+              "t_end": 25940.039412096,
+              "ttft_ms": 282.3,
+              "decode_time_s": 1.0344,
+              "tpot_ms": 33.37,
+              "decode_tok_s": 29.97,
+              "prefill_tok_s": 14630.07,
+              "e2e_s": 1.3167,
+              "output_snippet": "    Based  Based on  Based on the  Based on the provided  Ba"
+            },
+            {
+              "req_id": 0,
+              "prompt_tokens": 4130,
+              "completion_tokens": 32,
+              "t_start": 25940.039609398,
+              "t_first": 25940.331217808,
+              "t_end": 25941.366513541,
+              "ttft_ms": 291.61,
+              "decode_time_s": 1.0353,
+              "tpot_ms": 33.4,
+              "decode_tok_s": 29.94,
+              "prefill_tok_s": 14162.83,
+              "e2e_s": 1.3269,
+              "output_snippet": "    Based  Based on  Based on the  Based on the provided  Ba"
+            },
+            {
+              "req_id": 0,
+              "prompt_tokens": 4130,
+              "completion_tokens": 32,
+              "t_start": 25941.366872567,
+              "t_first": 25941.642393185,
+              "t_end": 25942.682397302,
+              "ttft_ms": 275.52,
+              "decode_time_s": 1.04,
+              "tpot_ms": 33.55,
+              "decode_tok_s": 29.81,
+              "prefill_tok_s": 14989.8,
+              "e2e_s": 1.3155,
+              "output_snippet": "    Based  Based on  Based on the  Based on the provided  Ba"
+            }
+          ]
+        },
+        "16K": {
+          "tier": "16K",
+          "actual_prompt_tokens": 16386,
+          "prefill_tok_s": {
+            "median": 47797.23,
+            "min": 46046.88,
+            "max": 48436.72,
+            "mean": 47277.21,
+            "stdev": 1047.18,
+            "cv": 2.21
+          },
+          "ttft_ms": {
+            "median": 342.82,
+            "min": 338.3,
+            "max": 355.85,
+            "mean": 346.73,
+            "stdev": 7.72,
+            "cv": 2.23
+          },
+          "decode_tok_s": {
+            "median": 27.23,
+            "min": 27.2,
+            "max": 27.28,
+            "mean": 27.23,
+            "stdev": 0.03,
+            "cv": 0.12
+          },
+          "e2e_s": {
+            "median": 1.48,
+            "min": 1.48,
+            "max": 1.49,
+            "mean": 1.48,
+            "stdev": 0.01,
+            "cv": 0.57
+          },
+          "runs": [
+            {
+              "req_id": 0,
+              "prompt_tokens": 16386,
+              "completion_tokens": 32,
+              "t_start": 25956.457228632,
+              "t_first": 25956.799937697,
+              "t_end": 25957.939406238,
+              "ttft_ms": 342.71,
+              "decode_time_s": 1.1395,
+              "tpot_ms": 36.76,
+              "decode_tok_s": 27.21,
+              "prefill_tok_s": 47813.15,
+              "e2e_s": 1.4822,
+              "output_snippet": "    <think>  <think>   <think> The  <think> The user  <think"
+            },
+            {
+              "req_id": 0,
+              "prompt_tokens": 16386,
+              "completion_tokens": 32,
+              "t_start": 25957.939758639,
+              "t_first": 25958.295613383,
+              "t_end": 25959.434054639,
+              "ttft_ms": 355.85,
+              "decode_time_s": 1.1384,
+              "tpot_ms": 36.72,
+              "decode_tok_s": 27.23,
+              "prefill_tok_s": 46046.88,
+              "e2e_s": 1.4943,
+              "output_snippet": "    <think>  <think>   <think> The  <think> The user  <think"
+            },
+            {
+              "req_id": 0,
+              "prompt_tokens": 16386,
+              "completion_tokens": 32,
+              "t_start": 25959.434429784,
+              "t_first": 25959.777253025,
+              "t_end": 25960.913423001,
+              "ttft_ms": 342.82,
+              "decode_time_s": 1.1362,
+              "tpot_ms": 36.65,
+              "decode_tok_s": 27.28,
+              "prefill_tok_s": 47797.23,
+              "e2e_s": 1.479,
+              "output_snippet": "    <think>  <think>   <think> The  <think> The user  <think"
+            },
+            {
+              "req_id": 0,
+              "prompt_tokens": 16386,
+              "completion_tokens": 32,
+              "t_start": 25960.913810309,
+              "t_first": 25961.267780288,
+              "t_end": 25962.407311293,
+              "ttft_ms": 353.97,
+              "decode_time_s": 1.1395,
+              "tpot_ms": 36.76,
+              "decode_tok_s": 27.2,
+              "prefill_tok_s": 46292.06,
+              "e2e_s": 1.4935,
+              "output_snippet": "    <think>  <think>   <think> The  <think> The user  <think"
+            },
+            {
+              "req_id": 0,
+              "prompt_tokens": 16386,
+              "completion_tokens": 32,
+              "t_start": 25962.407691753,
+              "t_first": 25962.745988806,
+              "t_end": 25963.883403309,
+              "ttft_ms": 338.3,
+              "decode_time_s": 1.1374,
+              "tpot_ms": 36.69,
+              "decode_tok_s": 27.25,
+              "prefill_tok_s": 48436.72,
+              "e2e_s": 1.4757,
+              "output_snippet": "    <think>  <think>   <think> The  <think> The user  <think"
+            }
+          ]
+        },
+        "32K": {
+          "tier": "32K",
+          "actual_prompt_tokens": 32745,
+          "prefill_tok_s": {
+            "median": 14947.56,
+            "min": 14679.38,
+            "max": 15030.8,
+            "mean": 14912.37,
+            "stdev": 135.27,
+            "cv": 0.91
+          },
+          "ttft_ms": {
+            "median": 2190.66,
+            "min": 2178.53,
+            "max": 2230.68,
+            "mean": 2195.98,
+            "stdev": 20.12,
+            "cv": 0.92
+          },
+          "decode_tok_s": {
+            "median": 23.94,
+            "min": 23.8,
+            "max": 23.99,
+            "mean": 23.92,
+            "stdev": 0.07,
+            "cv": 0.31
+          },
+          "e2e_s": {
+            "median": 3.48,
+            "min": 3.47,
+            "max": 3.53,
+            "mean": 3.49,
+            "stdev": 0.02,
+            "cv": 0.6
+          },
+          "runs": [
+            {
+              "req_id": 0,
+              "prompt_tokens": 32745,
+              "completion_tokens": 32,
+              "t_start": 25986.430271986,
+              "t_first": 25988.622580626,
+              "t_end": 25989.914723876,
+              "ttft_ms": 2192.31,
+              "decode_time_s": 1.2921,
+              "tpot_ms": 41.68,
+              "decode_tok_s": 23.99,
+              "prefill_tok_s": 14936.31,
+              "e2e_s": 3.4845,
+              "output_snippet": "    <think>  <think>   <think> The  <think> The user  <think"
+            },
+            {
+              "req_id": 0,
+              "prompt_tokens": 32745,
+              "completion_tokens": 32,
+              "t_start": 25989.915290293,
+              "t_first": 25992.145970776,
+              "t_end": 25993.442475181,
+              "ttft_ms": 2230.68,
+              "decode_time_s": 1.2965,
+              "tpot_ms": 41.82,
+              "decode_tok_s": 23.91,
+              "prefill_tok_s": 14679.38,
+              "e2e_s": 3.5272,
+              "output_snippet": "    <think>  <think>   <think> The  <think> The user  <think"
+            },
+            {
+              "req_id": 0,
+              "prompt_tokens": 32745,
+              "completion_tokens": 32,
+              "t_start": 25993.4437532,
+              "t_first": 25995.631449398,
+              "t_end": 25996.926137133,
+              "ttft_ms": 2187.7,
+              "decode_time_s": 1.2947,
+              "tpot_ms": 41.76,
+              "decode_tok_s": 23.94,
+              "prefill_tok_s": 14967.8,
+              "e2e_s": 3.4824,
+              "output_snippet": "    <think>  <think>   <think> The  <think> The user  <think"
+            },
+            {
+              "req_id": 0,
+              "prompt_tokens": 32745,
+              "completion_tokens": 32,
+              "t_start": 25996.92742387,
+              "t_first": 25999.118081852,
+              "t_end": 26000.420420155,
+              "ttft_ms": 2190.66,
+              "decode_time_s": 1.3023,
+              "tpot_ms": 42.01,
+              "decode_tok_s": 23.8,
+              "prefill_tok_s": 14947.56,
+              "e2e_s": 3.493,
+              "output_snippet": "    <think>  <think>   <think> The  <think> The user  <think"
+            },
+            {
+              "req_id": 0,
+              "prompt_tokens": 32745,
+              "completion_tokens": 32,
+              "t_start": 26000.421366345,
+              "t_first": 26002.59989241,
+              "t_end": 26003.893722697,
+              "ttft_ms": 2178.53,
+              "decode_time_s": 1.2938,
+              "tpot_ms": 41.74,
+              "decode_tok_s": 23.96,
+              "prefill_tok_s": 15030.8,
+              "e2e_s": 3.4724,
+              "output_snippet": "    <think>  <think>   <think> The  <think> The user  <think"
+            }
+          ]
+        }
+      },
+      "test_3_mixed": {
+        "actual_prompt_tokens": 8238,
+        "ttft_ms": {
+          "median": 310.69,
+          "min": 299.88,
+          "max": 328.79,
+          "mean": 312.3,
+          "stdev": 11.78,
+          "cv": 3.77
+        },
+        "tpot_ms": {
+          "median": 34.56,
+          "min": 34.47,
+          "max": 34.59,
+          "mean": 34.55,
+          "stdev": 0.05,
+          "cv": 0.13
+        },
+        "e2e_s": {
+          "median": 9.13,
+          "min": 9.09,
+          "max": 9.14,
+          "mean": 9.12,
+          "stdev": 0.02,
+          "cv": 0.22
+        },
+        "total_tok_s": {
+          "median": 930.32,
+          "min": 929.16,
+          "max": 934.56,
+          "mean": 931.19,
+          "stdev": 2.07,
+          "cv": 0.22
+        },
+        "runs": [
+          {
+            "req_id": 0,
+            "prompt_tokens": 8238,
+            "completion_tokens": 256,
+            "t_start": 26022.171598567,
+            "t_first": 26022.49053981,
+            "t_end": 26031.301826422,
+            "ttft_ms": 318.94,
+            "decode_time_s": 8.8113,
+            "tpot_ms": 34.55,
+            "decode_tok_s": 28.94,
+            "prefill_tok_s": 25829.21,
+            "e2e_s": 9.1302,
+            "output_snippet": "    Based  Based on  Based on the  Based on the provided  Ba",
+            "total_tok_s": 930.32
+          },
+          {
+            "req_id": 0,
+            "prompt_tokens": 8238,
+            "completion_tokens": 256,
+            "t_start": 26031.302087639,
+            "t_first": 26031.605300869,
+            "t_end": 26040.419808788,
+            "ttft_ms": 303.21,
+            "decode_time_s": 8.8145,
+            "tpot_ms": 34.57,
+            "decode_tok_s": 28.93,
+            "prefill_tok_s": 27169.0,
+            "e2e_s": 9.1177,
+            "output_snippet": "    Based  Based on  Based on the  Based on the provided  Ba",
+            "total_tok_s": 931.59
+          },
+          {
+            "req_id": 0,
+            "prompt_tokens": 8238,
+            "completion_tokens": 256,
+            "t_start": 26040.420352262,
+            "t_first": 26040.720236609,
+            "t_end": 26049.509129949,
+            "ttft_ms": 299.88,
+            "decode_time_s": 8.7889,
+            "tpot_ms": 34.47,
+            "decode_tok_s": 29.01,
+            "prefill_tok_s": 27470.59,
+            "e2e_s": 9.0888,
+            "output_snippet": "    Based  Based on  Based on the  Based on the provided  Ba",
+            "total_tok_s": 934.56
+          },
+          {
+            "req_id": 0,
+            "prompt_tokens": 8238,
+            "completion_tokens": 256,
+            "t_start": 26049.509670792,
+            "t_first": 26049.820357225,
+            "t_end": 26058.639940168,
+            "ttft_ms": 310.69,
+            "decode_time_s": 8.8196,
+            "tpot_ms": 34.59,
+            "decode_tok_s": 28.91,
+            "prefill_tok_s": 26515.48,
+            "e2e_s": 9.1303,
+            "output_snippet": "    Based  Based on  Based on the  Based on the provided  Ba",
+            "total_tok_s": 930.31
+          },
+          {
+            "req_id": 0,
+            "prompt_tokens": 8238,
+            "completion_tokens": 256,
+            "t_start": 26058.640407154,
+            "t_first": 26058.969200695,
+            "t_end": 26067.781990226,
+            "ttft_ms": 328.79,
+            "decode_time_s": 8.8128,
+            "tpot_ms": 34.56,
+            "decode_tok_s": 28.94,
+            "prefill_tok_s": 25055.24,
+            "e2e_s": 9.1416,
+            "output_snippet": "    Based  Based on  Based on the  Based on the provided  Ba",
+            "total_tok_s": 929.16
+          }
+        ]
+      },
+      "test_4_concurrency": {
+        "C1": {
+          "concurrency": 1,
+          "agg_decode_tok_s": {
+            "median": 31.01,
+            "min": 30.99,
+            "max": 31.04,
+            "mean": 31.01,
+            "stdev": 0.03,
+            "cv": 0.08
+          },
+          "avg_per_req_decode_tok_s": {
+            "median": 30.89,
+            "min": 30.87,
+            "max": 30.91,
+            "mean": 30.89,
+            "stdev": 0.02,
+            "cv": 0.06
+          },
+          "avg_tpot_ms": {
+            "median": 32.38,
+            "min": 32.35,
+            "max": 32.4,
+            "mean": 32.38,
+            "stdev": 0.03,
+            "cv": 0.08
+          },
+          "avg_ttft_ms": {
+            "median": 380.83,
+            "min": 380.06,
+            "max": 383.85,
+            "mean": 381.58,
+            "stdev": 2.0,
+            "cv": 0.52
+          },
+          "batch_e2e_s": {
+            "median": 8.64,
+            "min": 8.63,
+            "max": 8.64,
+            "mean": 8.64,
+            "stdev": 0.01,
+            "cv": 0.06
+          },
+          "batches": [
+            {
+              "concurrency": 1,
+              "decode_interval_s": 8.2616,
+              "batch_e2e_s": 8.6424,
+              "total_completion_tokens": 256,
+              "agg_decode_tok_s": 30.99,
+              "avg_per_req_decode_tok_s": 30.87,
+              "avg_tpot_ms": 32.4,
+              "avg_ttft_ms": 380.83,
+              "requests": [
+                {
+                  "req_id": 0,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26076.408940837,
+                  "t_first": 26076.789767135,
+                  "t_end": 26085.051335734,
+                  "ttft_ms": 380.83,
+                  "decode_time_s": 8.2616,
+                  "tpot_ms": 32.4,
+                  "decode_tok_s": 30.87,
+                  "prefill_tok_s": 968.95,
+                  "e2e_s": 8.6424,
+                  "output_snippet": " RD RDMA RDMA networks RDMA networks, RDMA networks, metadat"
+                }
+              ]
+            },
+            {
+              "concurrency": 1,
+              "decode_interval_s": 8.2486,
+              "batch_e2e_s": 8.6325,
+              "total_completion_tokens": 256,
+              "agg_decode_tok_s": 31.04,
+              "avg_per_req_decode_tok_s": 30.91,
+              "avg_tpot_ms": 32.35,
+              "avg_ttft_ms": 383.85,
+              "requests": [
+                {
+                  "req_id": 0,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26085.052182468,
+                  "t_first": 26085.436028111,
+                  "t_end": 26093.68465243,
+                  "ttft_ms": 383.85,
+                  "decode_time_s": 8.2486,
+                  "tpot_ms": 32.35,
+                  "decode_tok_s": 30.91,
+                  "prefill_tok_s": 961.32,
+                  "e2e_s": 8.6325,
+                  "output_snippet": " RD RDMA RDMA networks RDMA networks, RDMA networks, metadat"
+                }
+              ]
+            },
+            {
+              "concurrency": 1,
+              "decode_interval_s": 8.2559,
+              "batch_e2e_s": 8.636,
+              "total_completion_tokens": 256,
+              "agg_decode_tok_s": 31.01,
+              "avg_per_req_decode_tok_s": 30.89,
+              "avg_tpot_ms": 32.38,
+              "avg_ttft_ms": 380.06,
+              "requests": [
+                {
+                  "req_id": 0,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26093.685443508,
+                  "t_first": 26094.065502673,
+                  "t_end": 26102.321415111,
+                  "ttft_ms": 380.06,
+                  "decode_time_s": 8.2559,
+                  "tpot_ms": 32.38,
+                  "decode_tok_s": 30.89,
+                  "prefill_tok_s": 970.9,
+                  "e2e_s": 8.636,
+                  "output_snippet": " RD RDMA RDMA networks RDMA networks, RDMA networks, metadat"
+                }
+              ]
+            }
+          ]
+        },
+        "C2": {
+          "concurrency": 2,
+          "agg_decode_tok_s": {
+            "median": 37.61,
+            "min": 37.56,
+            "max": 37.67,
+            "mean": 37.61,
+            "stdev": 0.06,
+            "cv": 0.15
+          },
+          "avg_per_req_decode_tok_s": {
+            "median": 19.0,
+            "min": 18.97,
+            "max": 19.02,
+            "mean": 19.0,
+            "stdev": 0.03,
+            "cv": 0.13
+          },
+          "avg_tpot_ms": {
+            "median": 52.66,
+            "min": 52.56,
+            "max": 52.73,
+            "mean": 52.65,
+            "stdev": 0.09,
+            "cv": 0.16
+          },
+          "avg_ttft_ms": {
+            "median": 563.88,
+            "min": 563.75,
+            "max": 566.31,
+            "mean": 564.65,
+            "stdev": 1.44,
+            "cv": 0.26
+          },
+          "batch_e2e_s": {
+            "median": 13.99,
+            "min": 13.97,
+            "max": 14.01,
+            "mean": 13.99,
+            "stdev": 0.02,
+            "cv": 0.15
+          },
+          "batches": [
+            {
+              "concurrency": 2,
+              "decode_interval_s": 13.6139,
+              "batch_e2e_s": 13.9946,
+              "total_completion_tokens": 512,
+              "agg_decode_tok_s": 37.61,
+              "avg_per_req_decode_tok_s": 19.0,
+              "avg_tpot_ms": 52.66,
+              "avg_ttft_ms": 566.31,
+              "requests": [
+                {
+                  "req_id": 0,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26116.349127707,
+                  "t_first": 26116.729536435,
+                  "t_end": 26130.343453796,
+                  "ttft_ms": 380.41,
+                  "decode_time_s": 13.6139,
+                  "tpot_ms": 53.39,
+                  "decode_tok_s": 18.73,
+                  "prefill_tok_s": 970.01,
+                  "e2e_s": 13.9943,
+                  "output_snippet": " RD RDMA RDMA networks RDMA networks, RDMA networks, metadat"
+                },
+                {
+                  "req_id": 1,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26116.348857042,
+                  "t_first": 26117.101062186,
+                  "t_end": 26130.343314111,
+                  "ttft_ms": 752.21,
+                  "decode_time_s": 13.2423,
+                  "tpot_ms": 51.93,
+                  "decode_tok_s": 19.26,
+                  "prefill_tok_s": 490.56,
+                  "e2e_s": 13.9945,
+                  "output_snippet": " spatial spatial locality spatial locality within spatial lo"
+                }
+              ]
+            },
+            {
+              "concurrency": 2,
+              "decode_interval_s": 13.6314,
+              "batch_e2e_s": 14.0089,
+              "total_completion_tokens": 512,
+              "agg_decode_tok_s": 37.56,
+              "avg_per_req_decode_tok_s": 18.97,
+              "avg_tpot_ms": 52.73,
+              "avg_ttft_ms": 563.88,
+              "requests": [
+                {
+                  "req_id": 0,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26130.344893795,
+                  "t_first": 26130.72214612,
+                  "t_end": 26144.353509615,
+                  "ttft_ms": 377.25,
+                  "decode_time_s": 13.6314,
+                  "tpot_ms": 53.46,
+                  "decode_tok_s": 18.71,
+                  "prefill_tok_s": 978.13,
+                  "e2e_s": 14.0086,
+                  "output_snippet": " RD RDMA RDMA networks RDMA networks, RDMA networks, metadat"
+                },
+                {
+                  "req_id": 1,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26130.344633218,
+                  "t_first": 26131.095145408,
+                  "t_end": 26144.353388927,
+                  "ttft_ms": 750.51,
+                  "decode_time_s": 13.2582,
+                  "tpot_ms": 51.99,
+                  "decode_tok_s": 19.23,
+                  "prefill_tok_s": 491.66,
+                  "e2e_s": 14.0088,
+                  "output_snippet": " spatial spatial locality spatial locality within spatial lo"
+                }
+              ]
+            },
+            {
+              "concurrency": 2,
+              "decode_interval_s": 13.5908,
+              "batch_e2e_s": 13.9682,
+              "total_completion_tokens": 512,
+              "agg_decode_tok_s": 37.67,
+              "avg_per_req_decode_tok_s": 19.02,
+              "avg_tpot_ms": 52.56,
+              "avg_ttft_ms": 563.75,
+              "requests": [
+                {
+                  "req_id": 0,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26144.35497289,
+                  "t_first": 26144.732163949,
+                  "t_end": 26158.322978094,
+                  "ttft_ms": 377.19,
+                  "decode_time_s": 13.5908,
+                  "tpot_ms": 53.3,
+                  "decode_tok_s": 18.76,
+                  "prefill_tok_s": 978.28,
+                  "e2e_s": 13.968,
+                  "output_snippet": " RD RDMA RDMA networks RDMA networks, RDMA networks, metadat"
+                },
+                {
+                  "req_id": 1,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26144.354731798,
+                  "t_first": 26145.105049478,
+                  "t_end": 26158.322852595,
+                  "ttft_ms": 750.32,
+                  "decode_time_s": 13.2178,
+                  "tpot_ms": 51.83,
+                  "decode_tok_s": 19.29,
+                  "prefill_tok_s": 491.79,
+                  "e2e_s": 13.9681,
+                  "output_snippet": " spatial spatial locality spatial locality within spatial lo"
+                }
+              ]
+            }
+          ]
+        },
+        "C4": {
+          "concurrency": 4,
+          "agg_decode_tok_s": {
+            "median": 69.41,
+            "min": 69.39,
+            "max": 69.47,
+            "mean": 69.42,
+            "stdev": 0.04,
+            "cv": 0.06
+          },
+          "avg_per_req_decode_tok_s": {
+            "median": 18.16,
+            "min": 18.16,
+            "max": 18.18,
+            "mean": 18.17,
+            "stdev": 0.01,
+            "cv": 0.06
+          },
+          "avg_tpot_ms": {
+            "median": 55.11,
+            "min": 55.06,
+            "max": 55.12,
+            "mean": 55.1,
+            "stdev": 0.03,
+            "cv": 0.06
+          },
+          "avg_ttft_ms": {
+            "median": 1078.96,
+            "min": 1076.54,
+            "max": 1085.35,
+            "mean": 1080.28,
+            "stdev": 4.55,
+            "cv": 0.42
+          },
+          "batch_e2e_s": {
+            "median": 15.13,
+            "min": 15.12,
+            "max": 15.14,
+            "mean": 15.13,
+            "stdev": 0.01,
+            "cv": 0.07
+          },
+          "batches": [
+            {
+              "concurrency": 4,
+              "decode_interval_s": 14.7579,
+              "batch_e2e_s": 15.1421,
+              "total_completion_tokens": 1024,
+              "agg_decode_tok_s": 69.39,
+              "avg_per_req_decode_tok_s": 18.16,
+              "avg_tpot_ms": 55.12,
+              "avg_ttft_ms": 1085.35,
+              "requests": [
+                {
+                  "req_id": 0,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26177.345910197,
+                  "t_first": 26178.665334532,
+                  "t_end": 26192.487624854,
+                  "ttft_ms": 1319.42,
+                  "decode_time_s": 13.8223,
+                  "tpot_ms": 54.21,
+                  "decode_tok_s": 18.45,
+                  "prefill_tok_s": 279.67,
+                  "e2e_s": 15.1417,
+                  "output_snippet": " RD RDMA RDMA networks RDMA networks, RDMA networks, metadat"
+                },
+                {
+                  "req_id": 1,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26177.346284267,
+                  "t_first": 26178.664958645,
+                  "t_end": 26192.487068167,
+                  "ttft_ms": 1318.67,
+                  "decode_time_s": 13.8221,
+                  "tpot_ms": 54.2,
+                  "decode_tok_s": 18.45,
+                  "prefill_tok_s": 279.83,
+                  "e2e_s": 15.1408,
+                  "output_snippet": " spatial spatial locality spatial locality within spatial lo"
+                },
+                {
+                  "req_id": 2,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26177.346104443,
+                  "t_first": 26177.729894734,
+                  "t_end": 26192.487771284,
+                  "ttft_ms": 383.79,
+                  "decode_time_s": 14.7579,
+                  "tpot_ms": 57.87,
+                  "decode_tok_s": 17.28,
+                  "prefill_tok_s": 961.46,
+                  "e2e_s": 15.1417,
+                  "output_snippet": " discrete discrete syndrome discrete syndrome patterns discr"
+                },
+                {
+                  "req_id": 3,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26177.345668838,
+                  "t_first": 26178.665182082,
+                  "t_end": 26192.487480538,
+                  "ttft_ms": 1319.51,
+                  "decode_time_s": 13.8223,
+                  "tpot_ms": 54.21,
+                  "decode_tok_s": 18.45,
+                  "prefill_tok_s": 279.65,
+                  "e2e_s": 15.1418,
+                  "output_snippet": " up upw upwelling upwelling. upwelling. These upwelling. The"
+                }
+              ]
+            },
+            {
+              "concurrency": 4,
+              "decode_interval_s": 14.7404,
+              "batch_e2e_s": 15.1206,
+              "total_completion_tokens": 1024,
+              "agg_decode_tok_s": 69.47,
+              "avg_per_req_decode_tok_s": 18.18,
+              "avg_tpot_ms": 55.06,
+              "avg_ttft_ms": 1078.96,
+              "requests": [
+                {
+                  "req_id": 0,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26192.489510169,
+                  "t_first": 26193.801709703,
+                  "t_end": 26207.609393876,
+                  "ttft_ms": 1312.2,
+                  "decode_time_s": 13.8077,
+                  "tpot_ms": 54.15,
+                  "decode_tok_s": 18.47,
+                  "prefill_tok_s": 281.21,
+                  "e2e_s": 15.1199,
+                  "output_snippet": " RD RDMA RDMA networks RDMA networks, RDMA networks, metadat"
+                },
+                {
+                  "req_id": 1,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26192.489967732,
+                  "t_first": 26193.801466468,
+                  "t_end": 26207.609117722,
+                  "ttft_ms": 1311.5,
+                  "decode_time_s": 13.8077,
+                  "tpot_ms": 54.15,
+                  "decode_tok_s": 18.47,
+                  "prefill_tok_s": 281.36,
+                  "e2e_s": 15.1191,
+                  "output_snippet": " spatial spatial locality spatial locality within spatial lo"
+                },
+                {
+                  "req_id": 2,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26192.48971796,
+                  "t_first": 26192.869524531,
+                  "t_end": 26207.60988287,
+                  "ttft_ms": 379.81,
+                  "decode_time_s": 14.7404,
+                  "tpot_ms": 57.81,
+                  "decode_tok_s": 17.3,
+                  "prefill_tok_s": 971.55,
+                  "e2e_s": 15.1202,
+                  "output_snippet": " discrete discrete syndrome discrete syndrome patterns discr"
+                },
+                {
+                  "req_id": 3,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26192.489273229,
+                  "t_first": 26193.801618591,
+                  "t_end": 26207.609269925,
+                  "ttft_ms": 1312.35,
+                  "decode_time_s": 13.8077,
+                  "tpot_ms": 54.15,
+                  "decode_tok_s": 18.47,
+                  "prefill_tok_s": 281.18,
+                  "e2e_s": 15.12,
+                  "output_snippet": " up upw upwelling upwelling. upwelling. These upwelling. The"
+                }
+              ]
+            },
+            {
+              "concurrency": 4,
+              "decode_interval_s": 14.7529,
+              "batch_e2e_s": 15.1318,
+              "total_completion_tokens": 1024,
+              "agg_decode_tok_s": 69.41,
+              "avg_per_req_decode_tok_s": 18.16,
+              "avg_tpot_ms": 55.11,
+              "avg_ttft_ms": 1076.54,
+              "requests": [
+                {
+                  "req_id": 0,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26207.612051828,
+                  "t_first": 26208.921281453,
+                  "t_end": 26222.743263475,
+                  "ttft_ms": 1309.23,
+                  "decode_time_s": 13.822,
+                  "tpot_ms": 54.2,
+                  "decode_tok_s": 18.45,
+                  "prefill_tok_s": 281.85,
+                  "e2e_s": 15.1312,
+                  "output_snippet": " RD RDMA RDMA networks RDMA networks, RDMA networks, metadat"
+                },
+                {
+                  "req_id": 1,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26207.612357732,
+                  "t_first": 26208.921378289,
+                  "t_end": 26222.743623399,
+                  "ttft_ms": 1309.02,
+                  "decode_time_s": 13.8222,
+                  "tpot_ms": 54.2,
+                  "decode_tok_s": 18.45,
+                  "prefill_tok_s": 281.89,
+                  "e2e_s": 15.1313,
+                  "output_snippet": " spatial spatial locality spatial locality within spatial lo"
+                },
+                {
+                  "req_id": 2,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26207.612186148,
+                  "t_first": 26207.990748679,
+                  "t_end": 26222.74351197,
+                  "ttft_ms": 378.56,
+                  "decode_time_s": 14.7528,
+                  "tpot_ms": 57.85,
+                  "decode_tok_s": 17.28,
+                  "prefill_tok_s": 974.74,
+                  "e2e_s": 15.1313,
+                  "output_snippet": " discrete discrete syndrome discrete syndrome patterns discr"
+                },
+                {
+                  "req_id": 3,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26207.61180716,
+                  "t_first": 26208.921163779,
+                  "t_end": 26222.743389467,
+                  "ttft_ms": 1309.36,
+                  "decode_time_s": 13.8222,
+                  "tpot_ms": 54.2,
+                  "decode_tok_s": 18.45,
+                  "prefill_tok_s": 281.82,
+                  "e2e_s": 15.1316,
+                  "output_snippet": " up upw upwelling upwelling. upwelling. These upwelling. The"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "telemetry_post": {
+      "raw": "============================ ROCm System Management Interface ============================\n====================================== Temperature =======================================\nGPU[0]\t\t: Temperature (Sensor edge) (C): 75.0\nGPU[0]\t\t: Temperature (Sensor junction) (C): 92.0\nGPU[0]\t\t: Temperature (Sensor memory) (C): 82.0\nGPU[1]\t\t: Temperature (Sensor edge) (C): 66.0\nGPU[1]\t\t: Temperature (Sensor junction) (C): 86.0\nGPU[1]\t\t: Temperature (Sensor memory) (C): 78.0\n==========================================================================================\n=================================== % time GPU is busy ===================================\nGPU[0]\t\t: GPU use (%): 100\nGPU[1]\t\t: GPU use (%): 100\n==========================================================================================\n================================== End of ROCm SMI Log ===================================",
+      "gpus": [
+        {
+          "edge_temp_c": 66.0,
+          "junction_temp_c": 86.0,
+          "mem_temp_c": 78.0,
+          "gpu_use_pct": 100.0
+        },
+        {
+          "gpu_use_pct": 100.0
+        }
+      ]
+    },
+    "dmesg_aer": ""
+  },
+  "direct_p2p": {
+    "mode": "direct_p2p",
+    "container_name": "sglang-ab-direct_p2p",
+    "rccl_logs": "x99-ubuntu:129:129 [0] NCCL INFO Channel 00/02 : 0 1\nx99-ubuntu:129:129 [0] NCCL INFO Channel 01/02 : 0 1\nx99-ubuntu:129:129 [0] NCCL INFO Check P2P Type isAllDirectP2p 1 directMode 0\nx99-ubuntu:130:130 [1] NCCL INFO Channel 00/0 : 1[8000] -> 0[5000] via P2P/IPC comm 0x57dd025235b0 nRanks 02\nx99-ubuntu:130:130 [1] NCCL INFO Channel 01/0 : 1[8000] -> 0[5000] via P2P/IPC comm 0x57dd025235b0 nRanks 02\nx99-ubuntu:129:129 [0] NCCL INFO Channel 00/0 : 0[5000] -> 1[8000] via P2P/IPC comm 0x558fd3c33f60 nRanks 02\nx99-ubuntu:129:129 [0] NCCL INFO Channel 01/0 : 0[5000] -> 1[8000] via P2P/IPC comm 0x558fd3c33f60 nRanks 02\nx99-ubuntu:130:130 [1] NCCL INFO comm:0x57dd025235b0, nRanks:2, nNodes:1, coll channels:2 collnet channels:2, nvls channels:0, p2p channels:8, p2p channels per peer:8\nx99-ubuntu:129:129 [0] NCCL INFO comm:0x558fd3c33f60, nRanks:2, nNodes:1, coll channels:2 collnet channels:2, nvls channels:0, p2p channels:8, p2p channels per peer:8\nx99-ubuntu:129:129 [0] NCCL INFO minNChannels:-2\nx99-ubuntu:130:130 [1] NCCL INFO minNChannels:-2\nx99-ubuntu:129:129 [0] NCCL INFO minNChannels:-2\nx99-ubuntu:130:130 [1] NCCL INFO minNChannels:-2\nx99-ubuntu:129:129 [0] NCCL INFO minNChannels:-2\nx99-ubuntu:129:129 [0] NCCL INFO minNChannels:-2\nx99-ubuntu:129:129 [0] NCCL INFO minNChannels:-2\nx99-ubuntu:129:129 [0] NCCL INFO minNChannels:-2\nx99-ubuntu:129:129 [0] NCCL INFO minNChannels:-2\nx99-ubuntu:129:129 [0] NCCL INFO minNChannels:-2\nx99-ubuntu:130:130 [1] NCCL INFO minNChannels:-2\nx99-ubuntu:130:130 [1] NCCL INFO minNChannels:-2\nx99-ubuntu:130:130 [1] NCCL INFO minNChannels:-2\nx99-ubuntu:130:130 [1] NCCL INFO minNChannels:-2\nx99-ubuntu:130:130 [1] NCCL INFO minNChannels:-2\nx99-ubuntu:130:130 [1] NCCL INFO minNChannels:-2\nx99-ubuntu:130:130 [1] NCCL INFO minNChannels:-2\nx99-ubuntu:130:130 [1] NCCL INFO minNChannels:-2\nx99-ubuntu:130:130 [1] NCCL INFO minNChannels:-2\nx99-ubuntu:130:130 [1] NCCL INFO minNChannels:-2\nx99-ubuntu:130:130 [1] NCCL INFO minNChannels:-2",
+    "telemetry_pre": {
+      "raw": "============================ ROCm System Management Interface ============================\n====================================== Temperature =======================================\nGPU[0]\t\t: Temperature (Sensor edge) (C): 51.0\nGPU[0]\t\t: Temperature (Sensor junction) (C): 49.0\nGPU[0]\t\t: Temperature (Sensor memory) (C): 54.0\n==========================================================================================\n=================================== % time GPU is busy ===================================\nGPU[0]\t\t: GPU use (%): 0\nGPU[1]\t\t: GPU use (%): 0\n==========================================================================================\n================================== End of ROCm SMI Log ===================================",
+      "gpus": [
+        {
+          "edge_temp_c": 51.0,
+          "junction_temp_c": 49.0,
+          "mem_temp_c": 54.0,
+          "gpu_use_pct": 0.0
+        },
+        {
+          "gpu_use_pct": 0.0
+        }
+      ]
+    },
+    "tests": {
+      "test_1_decode": {
+        "decode_tok_s": {
+          "median": 31.28,
+          "min": 31.16,
+          "max": 31.34,
+          "mean": 31.27,
+          "stdev": 0.07,
+          "cv": 0.21
+        },
+        "tpot_ms": {
+          "median": 31.97,
+          "min": 31.9,
+          "max": 32.09,
+          "mean": 31.98,
+          "stdev": 0.07,
+          "cv": 0.22
+        },
+        "ttft_ms": {
+          "median": 261.45,
+          "min": 254.62,
+          "max": 269.12,
+          "mean": 260.31,
+          "stdev": 5.98,
+          "cv": 2.3
+        },
+        "e2e_s": {
+          "median": 16.6,
+          "min": 16.56,
+          "max": 16.66,
+          "mean": 16.6,
+          "stdev": 0.04,
+          "cv": 0.23
+        },
+        "runs": [
+          {
+            "req_id": 0,
+            "prompt_tokens": 193,
+            "completion_tokens": 512,
+            "t_start": 26438.310233062,
+            "t_first": 26438.571788555,
+            "t_end": 26454.968629429,
+            "ttft_ms": 261.56,
+            "decode_time_s": 16.3968,
+            "tpot_ms": 32.09,
+            "decode_tok_s": 31.16,
+            "prefill_tok_s": 737.89,
+            "e2e_s": 16.6584,
+            "output_snippet": "    The  The text  The text you  The text you provided  The "
+          },
+          {
+            "req_id": 0,
+            "prompt_tokens": 193,
+            "completion_tokens": 512,
+            "t_start": 26454.96887499,
+            "t_first": 26455.223494859,
+            "t_end": 26471.526282377,
+            "ttft_ms": 254.62,
+            "decode_time_s": 16.3028,
+            "tpot_ms": 31.9,
+            "decode_tok_s": 31.34,
+            "prefill_tok_s": 757.99,
+            "e2e_s": 16.5574,
+            "output_snippet": "    The  The text  The text you  The text you provided  The "
+          },
+          {
+            "req_id": 0,
+            "prompt_tokens": 193,
+            "completion_tokens": 512,
+            "t_start": 26471.526425333,
+            "t_first": 26471.781245615,
+            "t_end": 26488.1101191,
+            "ttft_ms": 254.82,
+            "decode_time_s": 16.3289,
+            "tpot_ms": 31.95,
+            "decode_tok_s": 31.29,
+            "prefill_tok_s": 757.4,
+            "e2e_s": 16.5837,
+            "output_snippet": "    The  The text  The text you  The text you provided  The "
+          },
+          {
+            "req_id": 0,
+            "prompt_tokens": 193,
+            "completion_tokens": 512,
+            "t_start": 26488.110384739,
+            "t_first": 26488.371839356,
+            "t_end": 26504.708517608,
+            "ttft_ms": 261.45,
+            "decode_time_s": 16.3367,
+            "tpot_ms": 31.97,
+            "decode_tok_s": 31.28,
+            "prefill_tok_s": 738.18,
+            "e2e_s": 16.5981,
+            "output_snippet": "    The  The text  The text you  The text you provided  The "
+          },
+          {
+            "req_id": 0,
+            "prompt_tokens": 193,
+            "completion_tokens": 512,
+            "t_start": 26504.708656534,
+            "t_first": 26504.9777785,
+            "t_end": 26521.324879251,
+            "ttft_ms": 269.12,
+            "decode_time_s": 16.3471,
+            "tpot_ms": 31.99,
+            "decode_tok_s": 31.26,
+            "prefill_tok_s": 717.15,
+            "e2e_s": 16.6162,
+            "output_snippet": "    The  The text  The text you  The text you provided  The "
+          }
+        ]
+      },
+      "test_2_prefill": {
+        "1K": {
+          "tier": "1K",
+          "actual_prompt_tokens": 1052,
+          "prefill_tok_s": {
+            "median": 1515.28,
+            "min": 1493.73,
+            "max": 1515.56,
+            "mean": 1508.38,
+            "stdev": 10.08,
+            "cv": 0.67
+          },
+          "ttft_ms": {
+            "median": 694.26,
+            "min": 694.13,
+            "max": 704.28,
+            "mean": 697.46,
+            "stdev": 4.68,
+            "cv": 0.67
+          },
+          "decode_tok_s": {
+            "median": 30.82,
+            "min": 30.79,
+            "max": 30.93,
+            "mean": 30.85,
+            "stdev": 0.06,
+            "cv": 0.2
+          },
+          "e2e_s": {
+            "median": 1.7,
+            "min": 1.7,
+            "max": 1.71,
+            "mean": 1.7,
+            "stdev": 0.0,
+            "cv": 0.19
+          },
+          "runs": [
+            {
+              "req_id": 0,
+              "prompt_tokens": 1052,
+              "completion_tokens": 32,
+              "t_start": 26524.861063179,
+              "t_first": 26525.555325789,
+              "t_end": 26526.561953722,
+              "ttft_ms": 694.26,
+              "decode_time_s": 1.0066,
+              "tpot_ms": 32.47,
+              "decode_tok_s": 30.8,
+              "prefill_tok_s": 1515.28,
+              "e2e_s": 1.7009,
+              "output_snippet": "    Based  Based on  Based on the  Based on the provided  Ba"
+            },
+            {
+              "req_id": 0,
+              "prompt_tokens": 1052,
+              "completion_tokens": 32,
+              "t_start": 26526.562117794,
+              "t_first": 26527.256248871,
+              "t_end": 26528.262930027,
+              "ttft_ms": 694.13,
+              "decode_time_s": 1.0067,
+              "tpot_ms": 32.47,
+              "decode_tok_s": 30.79,
+              "prefill_tok_s": 1515.56,
+              "e2e_s": 1.7008,
+              "output_snippet": "    Based  Based on  Based on the  Based on the provided  Ba"
+            },
+            {
+              "req_id": 0,
+              "prompt_tokens": 1052,
+              "completion_tokens": 32,
+              "t_start": 26528.263177564,
+              "t_first": 26528.957351683,
+              "t_end": 26529.963174697,
+              "ttft_ms": 694.17,
+              "decode_time_s": 1.0058,
+              "tpot_ms": 32.45,
+              "decode_tok_s": 30.82,
+              "prefill_tok_s": 1515.47,
+              "e2e_s": 1.7,
+              "output_snippet": "    Based  Based on  Based on the  Based on the provided  Ba"
+            },
+            {
+              "req_id": 0,
+              "prompt_tokens": 1052,
+              "completion_tokens": 32,
+              "t_start": 26529.963316984,
+              "t_first": 26530.663776611,
+              "t_end": 26531.665987936,
+              "ttft_ms": 700.46,
+              "decode_time_s": 1.0022,
+              "tpot_ms": 32.33,
+              "decode_tok_s": 30.93,
+              "prefill_tok_s": 1501.87,
+              "e2e_s": 1.7027,
+              "output_snippet": "    Based  Based on  Based on the  Based on the provided  Ba"
+            },
+            {
+              "req_id": 0,
+              "prompt_tokens": 1052,
+              "completion_tokens": 32,
+              "t_start": 26531.666323472,
+              "t_first": 26532.370600507,
+              "t_end": 26533.374260356,
+              "ttft_ms": 704.28,
+              "decode_time_s": 1.0037,
+              "tpot_ms": 32.38,
+              "decode_tok_s": 30.89,
+              "prefill_tok_s": 1493.73,
+              "e2e_s": 1.7079,
+              "output_snippet": "    Based  Based on  Based on the  Based on the provided  Ba"
+            }
+          ]
+        },
+        "4K": {
+          "tier": "4K",
+          "actual_prompt_tokens": 4130,
+          "prefill_tok_s": {
+            "median": 14092.97,
+            "min": 13152.14,
+            "max": 14752.94,
+            "mean": 14031.14,
+            "stdev": 602.6,
+            "cv": 4.29
+          },
+          "ttft_ms": {
+            "median": 293.05,
+            "min": 279.94,
+            "max": 314.02,
+            "mean": 294.79,
+            "stdev": 12.87,
+            "cv": 4.37
+          },
+          "decode_tok_s": {
+            "median": 30.18,
+            "min": 30.14,
+            "max": 30.23,
+            "mean": 30.18,
+            "stdev": 0.03,
+            "cv": 0.11
+          },
+          "e2e_s": {
+            "median": 1.32,
+            "min": 1.31,
+            "max": 1.34,
+            "mean": 1.32,
+            "stdev": 0.01,
+            "cv": 0.9
+          },
+          "runs": [
+            {
+              "req_id": 0,
+              "prompt_tokens": 4130,
+              "completion_tokens": 32,
+              "t_start": 26539.609729361,
+              "t_first": 26539.908906515,
+              "t_end": 26540.93589025,
+              "ttft_ms": 299.18,
+              "decode_time_s": 1.027,
+              "tpot_ms": 33.13,
+              "decode_tok_s": 30.19,
+              "prefill_tok_s": 13804.53,
+              "e2e_s": 1.3262,
+              "output_snippet": "    Based  Based on  Based on the  Based on the provided  Ba"
+            },
+            {
+              "req_id": 0,
+              "prompt_tokens": 4130,
+              "completion_tokens": 32,
+              "t_start": 26540.936123115,
+              "t_first": 26541.229176978,
+              "t_end": 26542.256307594,
+              "ttft_ms": 293.05,
+              "decode_time_s": 1.0271,
+              "tpot_ms": 33.13,
+              "decode_tok_s": 30.18,
+              "prefill_tok_s": 14092.97,
+              "e2e_s": 1.3202,
+              "output_snippet": "    Based  Based on  Based on the  Based on the provided  Ba"
+            },
+            {
+              "req_id": 0,
+              "prompt_tokens": 4130,
+              "completion_tokens": 32,
+              "t_start": 26542.256498582,
+              "t_first": 26542.570515891,
+              "t_end": 26543.596135826,
+              "ttft_ms": 314.02,
+              "decode_time_s": 1.0256,
+              "tpot_ms": 33.08,
+              "decode_tok_s": 30.23,
+              "prefill_tok_s": 13152.14,
+              "e2e_s": 1.3396,
+              "output_snippet": "    Based  Based on  Based on the  Based on the provided  Ba"
+            },
+            {
+              "req_id": 0,
+              "prompt_tokens": 4130,
+              "completion_tokens": 32,
+              "t_start": 26543.596306834,
+              "t_first": 26543.876251087,
+              "t_end": 26544.904783819,
+              "ttft_ms": 279.94,
+              "decode_time_s": 1.0285,
+              "tpot_ms": 33.18,
+              "decode_tok_s": 30.14,
+              "prefill_tok_s": 14752.94,
+              "e2e_s": 1.3085,
+              "output_snippet": "    Based  Based on  Based on the  Based on the provided  Ba"
+            },
+            {
+              "req_id": 0,
+              "prompt_tokens": 4130,
+              "completion_tokens": 32,
+              "t_start": 26544.90515929,
+              "t_first": 26545.192901192,
+              "t_end": 26546.220271765,
+              "ttft_ms": 287.74,
+              "decode_time_s": 1.0274,
+              "tpot_ms": 33.14,
+              "decode_tok_s": 30.17,
+              "prefill_tok_s": 14353.14,
+              "e2e_s": 1.3151,
+              "output_snippet": "    Based  Based on  Based on the  Based on the provided  Ba"
+            }
+          ]
+        },
+        "16K": {
+          "tier": "16K",
+          "actual_prompt_tokens": 16386,
+          "prefill_tok_s": {
+            "median": 48035.57,
+            "min": 47455.46,
+            "max": 49746.72,
+            "mean": 48428.46,
+            "stdev": 923.65,
+            "cv": 1.91
+          },
+          "ttft_ms": {
+            "median": 341.12,
+            "min": 329.39,
+            "max": 345.29,
+            "mean": 338.45,
+            "stdev": 6.4,
+            "cv": 1.89
+          },
+          "decode_tok_s": {
+            "median": 27.53,
+            "min": 27.42,
+            "max": 27.57,
+            "mean": 27.52,
+            "stdev": 0.06,
+            "cv": 0.22
+          },
+          "e2e_s": {
+            "median": 1.47,
+            "min": 1.46,
+            "max": 1.47,
+            "mean": 1.46,
+            "stdev": 0.0,
+            "cv": 0.3
+          },
+          "runs": [
+            {
+              "req_id": 0,
+              "prompt_tokens": 16386,
+              "completion_tokens": 32,
+              "t_start": 26557.206928581,
+              "t_first": 26557.536317142,
+              "t_end": 26558.667012765,
+              "ttft_ms": 329.39,
+              "decode_time_s": 1.1307,
+              "tpot_ms": 36.47,
+              "decode_tok_s": 27.42,
+              "prefill_tok_s": 49746.72,
+              "e2e_s": 1.4601,
+              "output_snippet": "    <think>  <think>   <think> The  <think> The user  <think"
+            },
+            {
+              "req_id": 0,
+              "prompt_tokens": 16386,
+              "completion_tokens": 32,
+              "t_start": 26558.667360796,
+              "t_first": 26559.008483032,
+              "t_end": 26560.133116519,
+              "ttft_ms": 341.12,
+              "decode_time_s": 1.1246,
+              "tpot_ms": 36.28,
+              "decode_tok_s": 27.56,
+              "prefill_tok_s": 48035.57,
+              "e2e_s": 1.4658,
+              "output_snippet": "    <think>  <think>   <think> The  <think> The user  <think"
+            },
+            {
+              "req_id": 0,
+              "prompt_tokens": 16386,
+              "completion_tokens": 32,
+              "t_start": 26560.133458592,
+              "t_first": 26560.475422925,
+              "t_end": 26561.601773128,
+              "ttft_ms": 341.96,
+              "decode_time_s": 1.1264,
+              "tpot_ms": 36.33,
+              "decode_tok_s": 27.52,
+              "prefill_tok_s": 47917.28,
+              "e2e_s": 1.4683,
+              "output_snippet": "    <think>  <think>   <think> The  <think> The user  <think"
+            },
+            {
+              "req_id": 0,
+              "prompt_tokens": 16386,
+              "completion_tokens": 32,
+              "t_start": 26561.602553039,
+              "t_first": 26561.947845269,
+              "t_end": 26563.072187561,
+              "ttft_ms": 345.29,
+              "decode_time_s": 1.1243,
+              "tpot_ms": 36.27,
+              "decode_tok_s": 27.57,
+              "prefill_tok_s": 47455.46,
+              "e2e_s": 1.4696,
+              "output_snippet": "    <think>  <think>   <think> The  <think> The user  <think"
+            },
+            {
+              "req_id": 0,
+              "prompt_tokens": 16386,
+              "completion_tokens": 32,
+              "t_start": 26563.072934466,
+              "t_first": 26563.407429382,
+              "t_end": 26564.533669937,
+              "ttft_ms": 334.49,
+              "decode_time_s": 1.1262,
+              "tpot_ms": 36.33,
+              "decode_tok_s": 27.53,
+              "prefill_tok_s": 48987.29,
+              "e2e_s": 1.4607,
+              "output_snippet": "    <think>  <think>   <think> The  <think> The user  <think"
+            }
+          ]
+        },
+        "32K": {
+          "tier": "32K",
+          "actual_prompt_tokens": 32745,
+          "prefill_tok_s": {
+            "median": 18764.07,
+            "min": 18589.61,
+            "max": 18799.73,
+            "mean": 18726.59,
+            "stdev": 86.23,
+            "cv": 0.46
+          },
+          "ttft_ms": {
+            "median": 1745.09,
+            "min": 1741.78,
+            "max": 1761.47,
+            "mean": 1748.61,
+            "stdev": 8.08,
+            "cv": 0.46
+          },
+          "decode_tok_s": {
+            "median": 24.16,
+            "min": 24.13,
+            "max": 24.21,
+            "mean": 24.17,
+            "stdev": 0.03,
+            "cv": 0.13
+          },
+          "e2e_s": {
+            "median": 3.03,
+            "min": 3.02,
+            "max": 3.05,
+            "mean": 3.03,
+            "stdev": 0.01,
+            "cv": 0.29
+          },
+          "runs": [
+            {
+              "req_id": 0,
+              "prompt_tokens": 32745,
+              "completion_tokens": 32,
+              "t_start": 26582.582889597,
+              "t_first": 26584.327980229,
+              "t_end": 26585.611133095,
+              "ttft_ms": 1745.09,
+              "decode_time_s": 1.2832,
+              "tpot_ms": 41.39,
+              "decode_tok_s": 24.16,
+              "prefill_tok_s": 18764.07,
+              "e2e_s": 3.0282,
+              "output_snippet": "    <think>  <think>   <think> The  <think> The user  <think"
+            },
+            {
+              "req_id": 0,
+              "prompt_tokens": 32745,
+              "completion_tokens": 32,
+              "t_start": 26585.611985589,
+              "t_first": 26587.355243153,
+              "t_end": 26588.636611367,
+              "ttft_ms": 1743.26,
+              "decode_time_s": 1.2814,
+              "tpot_ms": 41.33,
+              "decode_tok_s": 24.19,
+              "prefill_tok_s": 18783.8,
+              "e2e_s": 3.0246,
+              "output_snippet": "    <think>  <think>   <think> The  <think> The user  <think"
+            },
+            {
+              "req_id": 0,
+              "prompt_tokens": 32745,
+              "completion_tokens": 32,
+              "t_start": 26588.63865872,
+              "t_first": 26590.380439087,
+              "t_end": 26591.663308676,
+              "ttft_ms": 1741.78,
+              "decode_time_s": 1.2829,
+              "tpot_ms": 41.38,
+              "decode_tok_s": 24.16,
+              "prefill_tok_s": 18799.73,
+              "e2e_s": 3.0246,
+              "output_snippet": "    <think>  <think>   <think> The  <think> The user  <think"
+            },
+            {
+              "req_id": 0,
+              "prompt_tokens": 32745,
+              "completion_tokens": 32,
+              "t_start": 26591.665398323,
+              "t_first": 26593.426866565,
+              "t_end": 26594.711429003,
+              "ttft_ms": 1761.47,
+              "decode_time_s": 1.2846,
+              "tpot_ms": 41.44,
+              "decode_tok_s": 24.13,
+              "prefill_tok_s": 18589.61,
+              "e2e_s": 3.046,
+              "output_snippet": "    <think>  <think>   <think> The  <think> The user  <think"
+            },
+            {
+              "req_id": 0,
+              "prompt_tokens": 32745,
+              "completion_tokens": 32,
+              "t_start": 26594.712035496,
+              "t_first": 26596.463504898,
+              "t_end": 26597.74390115,
+              "ttft_ms": 1751.47,
+              "decode_time_s": 1.2804,
+              "tpot_ms": 41.3,
+              "decode_tok_s": 24.21,
+              "prefill_tok_s": 18695.73,
+              "e2e_s": 3.0319,
+              "output_snippet": "    <think>  <think>   <think> The  <think> The user  <think"
+            }
+          ]
+        }
+      },
+      "test_3_mixed": {
+        "actual_prompt_tokens": 8238,
+        "ttft_ms": {
+          "median": 318.99,
+          "min": 304.95,
+          "max": 321.06,
+          "mean": 315.59,
+          "stdev": 6.56,
+          "cv": 2.08
+        },
+        "tpot_ms": {
+          "median": 34.15,
+          "min": 34.08,
+          "max": 34.16,
+          "mean": 34.13,
+          "stdev": 0.04,
+          "cv": 0.1
+        },
+        "e2e_s": {
+          "median": 9.02,
+          "min": 9.01,
+          "max": 9.03,
+          "mean": 9.02,
+          "stdev": 0.01,
+          "cv": 0.11
+        },
+        "total_tok_s": {
+          "median": 942.2,
+          "min": 940.82,
+          "max": 942.86,
+          "mean": 941.9,
+          "stdev": 1.02,
+          "cv": 0.11
+        },
+        "runs": [
+          {
+            "req_id": 0,
+            "prompt_tokens": 8238,
+            "completion_tokens": 256,
+            "t_start": 26615.760253593,
+            "t_first": 26616.079559815,
+            "t_end": 26624.769514323,
+            "ttft_ms": 319.31,
+            "decode_time_s": 8.69,
+            "tpot_ms": 34.08,
+            "decode_tok_s": 29.34,
+            "prefill_tok_s": 25799.69,
+            "e2e_s": 9.0093,
+            "output_snippet": "    Based  Based on  Based on the  Based on the provided  Ba",
+            "total_tok_s": 942.8
+          },
+          {
+            "req_id": 0,
+            "prompt_tokens": 8238,
+            "completion_tokens": 256,
+            "t_start": 26624.770053719,
+            "t_first": 26625.089042449,
+            "t_end": 26633.798221812,
+            "ttft_ms": 318.99,
+            "decode_time_s": 8.7092,
+            "tpot_ms": 34.15,
+            "decode_tok_s": 29.28,
+            "prefill_tok_s": 25825.36,
+            "e2e_s": 9.0282,
+            "output_snippet": "    Based  Based on  Based on the  Based on the provided  Ba",
+            "total_tok_s": 940.83
+          },
+          {
+            "req_id": 0,
+            "prompt_tokens": 8238,
+            "completion_tokens": 256,
+            "t_start": 26633.798593892,
+            "t_first": 26634.103546087,
+            "t_end": 26642.813732443,
+            "ttft_ms": 304.95,
+            "decode_time_s": 8.7102,
+            "tpot_ms": 34.16,
+            "decode_tok_s": 29.28,
+            "prefill_tok_s": 27014.07,
+            "e2e_s": 9.0151,
+            "output_snippet": "    Based  Based on  Based on the  Based on the provided  Ba",
+            "total_tok_s": 942.2
+          },
+          {
+            "req_id": 0,
+            "prompt_tokens": 8238,
+            "completion_tokens": 256,
+            "t_start": 26642.813969246,
+            "t_first": 26643.127594971,
+            "t_end": 26651.822719713,
+            "ttft_ms": 313.63,
+            "decode_time_s": 8.6951,
+            "tpot_ms": 34.1,
+            "decode_tok_s": 29.33,
+            "prefill_tok_s": 26266.98,
+            "e2e_s": 9.0088,
+            "output_snippet": "    Based  Based on  Based on the  Based on the provided  Ba",
+            "total_tok_s": 942.86
+          },
+          {
+            "req_id": 0,
+            "prompt_tokens": 8238,
+            "completion_tokens": 256,
+            "t_start": 26651.823055341,
+            "t_first": 26652.144110593,
+            "t_end": 26660.851370095,
+            "ttft_ms": 321.06,
+            "decode_time_s": 8.7073,
+            "tpot_ms": 34.15,
+            "decode_tok_s": 29.29,
+            "prefill_tok_s": 25659.13,
+            "e2e_s": 9.0283,
+            "output_snippet": "    Based  Based on  Based on the  Based on the provided  Ba",
+            "total_tok_s": 940.82
+          }
+        ]
+      },
+      "test_4_concurrency": {
+        "C1": {
+          "concurrency": 1,
+          "agg_decode_tok_s": {
+            "median": 31.31,
+            "min": 31.25,
+            "max": 31.44,
+            "mean": 31.33,
+            "stdev": 0.1,
+            "cv": 0.31
+          },
+          "avg_per_req_decode_tok_s": {
+            "median": 31.19,
+            "min": 31.13,
+            "max": 31.32,
+            "mean": 31.21,
+            "stdev": 0.1,
+            "cv": 0.31
+          },
+          "avg_tpot_ms": {
+            "median": 32.07,
+            "min": 31.93,
+            "max": 32.12,
+            "mean": 32.04,
+            "stdev": 0.1,
+            "cv": 0.31
+          },
+          "avg_ttft_ms": {
+            "median": 297.22,
+            "min": 294.33,
+            "max": 298.42,
+            "mean": 296.66,
+            "stdev": 2.1,
+            "cv": 0.71
+          },
+          "batch_e2e_s": {
+            "median": 8.47,
+            "min": 8.44,
+            "max": 8.49,
+            "mean": 8.47,
+            "stdev": 0.02,
+            "cv": 0.27
+          },
+          "batches": [
+            {
+              "concurrency": 1,
+              "decode_interval_s": 8.1914,
+              "batch_e2e_s": 8.4858,
+              "total_completion_tokens": 256,
+              "agg_decode_tok_s": 31.25,
+              "avg_per_req_decode_tok_s": 31.13,
+              "avg_tpot_ms": 32.12,
+              "avg_ttft_ms": 294.33,
+              "requests": [
+                {
+                  "req_id": 0,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26669.324183608,
+                  "t_first": 26669.618509272,
+                  "t_end": 26677.809943416,
+                  "ttft_ms": 294.33,
+                  "decode_time_s": 8.1914,
+                  "tpot_ms": 32.12,
+                  "decode_tok_s": 31.13,
+                  "prefill_tok_s": 1253.71,
+                  "e2e_s": 8.4858,
+                  "output_snippet": " RD RDMA RDMA networks RDMA networks, RDMA networks, metadat"
+                }
+              ]
+            },
+            {
+              "concurrency": 1,
+              "decode_interval_s": 8.1768,
+              "batch_e2e_s": 8.474,
+              "total_completion_tokens": 256,
+              "agg_decode_tok_s": 31.31,
+              "avg_per_req_decode_tok_s": 31.19,
+              "avg_tpot_ms": 32.07,
+              "avg_ttft_ms": 297.22,
+              "requests": [
+                {
+                  "req_id": 0,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26677.810726597,
+                  "t_first": 26678.107943484,
+                  "t_end": 26686.284716344,
+                  "ttft_ms": 297.22,
+                  "decode_time_s": 8.1768,
+                  "tpot_ms": 32.07,
+                  "decode_tok_s": 31.19,
+                  "prefill_tok_s": 1241.52,
+                  "e2e_s": 8.474,
+                  "output_snippet": " RD RDMA RDMA networks RDMA networks, RDMA networks, metadat"
+                }
+              ]
+            },
+            {
+              "concurrency": 1,
+              "decode_interval_s": 8.1429,
+              "batch_e2e_s": 8.4413,
+              "total_completion_tokens": 256,
+              "agg_decode_tok_s": 31.44,
+              "avg_per_req_decode_tok_s": 31.32,
+              "avg_tpot_ms": 31.93,
+              "avg_ttft_ms": 298.42,
+              "requests": [
+                {
+                  "req_id": 0,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26686.285620303,
+                  "t_first": 26686.584039012,
+                  "t_end": 26694.726923225,
+                  "ttft_ms": 298.42,
+                  "decode_time_s": 8.1429,
+                  "tpot_ms": 31.93,
+                  "decode_tok_s": 31.32,
+                  "prefill_tok_s": 1236.52,
+                  "e2e_s": 8.4413,
+                  "output_snippet": " RD RDMA RDMA networks RDMA networks, RDMA networks, metadat"
+                }
+              ]
+            }
+          ]
+        },
+        "C2": {
+          "concurrency": 2,
+          "agg_decode_tok_s": {
+            "median": 37.9,
+            "min": 37.81,
+            "max": 37.93,
+            "mean": 37.88,
+            "stdev": 0.06,
+            "cv": 0.16
+          },
+          "avg_per_req_decode_tok_s": {
+            "median": 19.08,
+            "min": 19.03,
+            "max": 19.1,
+            "mean": 19.07,
+            "stdev": 0.04,
+            "cv": 0.19
+          },
+          "avg_tpot_ms": {
+            "median": 52.41,
+            "min": 52.36,
+            "max": 52.53,
+            "mean": 52.43,
+            "stdev": 0.09,
+            "cv": 0.17
+          },
+          "avg_ttft_ms": {
+            "median": 440.89,
+            "min": 440.56,
+            "max": 445.02,
+            "mean": 442.16,
+            "stdev": 2.49,
+            "cv": 0.56
+          },
+          "batch_e2e_s": {
+            "median": 13.81,
+            "min": 13.79,
+            "max": 13.84,
+            "mean": 13.81,
+            "stdev": 0.02,
+            "cv": 0.15
+          },
+          "batches": [
+            {
+              "concurrency": 2,
+              "decode_interval_s": 13.4978,
+              "batch_e2e_s": 13.7944,
+              "total_completion_tokens": 512,
+              "agg_decode_tok_s": 37.93,
+              "avg_per_req_decode_tok_s": 19.1,
+              "avg_tpot_ms": 52.36,
+              "avg_ttft_ms": 440.89,
+              "requests": [
+                {
+                  "req_id": 0,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26708.555732851,
+                  "t_first": 26708.852096851,
+                  "t_end": 26722.349715697,
+                  "ttft_ms": 296.36,
+                  "decode_time_s": 13.4976,
+                  "tpot_ms": 52.93,
+                  "decode_tok_s": 18.89,
+                  "prefill_tok_s": 1245.09,
+                  "e2e_s": 13.794,
+                  "output_snippet": " RD RDMA RDMA networks RDMA networks, RDMA networks, metadat"
+                },
+                {
+                  "req_id": 1,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26708.555494835,
+                  "t_first": 26709.140915859,
+                  "t_end": 26722.349891084,
+                  "ttft_ms": 585.42,
+                  "decode_time_s": 13.209,
+                  "tpot_ms": 51.8,
+                  "decode_tok_s": 19.31,
+                  "prefill_tok_s": 630.32,
+                  "e2e_s": 13.7944,
+                  "output_snippet": " spatial spatial locality spatial locality within spatial lo"
+                }
+              ]
+            },
+            {
+              "concurrency": 2,
+              "decode_interval_s": 13.5102,
+              "batch_e2e_s": 13.8117,
+              "total_completion_tokens": 512,
+              "agg_decode_tok_s": 37.9,
+              "avg_per_req_decode_tok_s": 19.08,
+              "avg_tpot_ms": 52.41,
+              "avg_ttft_ms": 445.02,
+              "requests": [
+                {
+                  "req_id": 0,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26722.351319696,
+                  "t_first": 26722.652523247,
+                  "t_end": 26736.162770751,
+                  "ttft_ms": 301.2,
+                  "decode_time_s": 13.5102,
+                  "tpot_ms": 52.98,
+                  "decode_tok_s": 18.87,
+                  "prefill_tok_s": 1225.09,
+                  "e2e_s": 13.8115,
+                  "output_snippet": " RD RDMA RDMA networks RDMA networks, RDMA networks, metadat"
+                },
+                {
+                  "req_id": 1,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26722.351083112,
+                  "t_first": 26722.939932741,
+                  "t_end": 26736.162647476,
+                  "ttft_ms": 588.85,
+                  "decode_time_s": 13.2227,
+                  "tpot_ms": 51.85,
+                  "decode_tok_s": 19.28,
+                  "prefill_tok_s": 626.65,
+                  "e2e_s": 13.8116,
+                  "output_snippet": " spatial spatial locality spatial locality within spatial lo"
+                }
+              ]
+            },
+            {
+              "concurrency": 2,
+              "decode_interval_s": 13.5401,
+              "batch_e2e_s": 13.8366,
+              "total_completion_tokens": 512,
+              "agg_decode_tok_s": 37.81,
+              "avg_per_req_decode_tok_s": 19.03,
+              "avg_tpot_ms": 52.53,
+              "avg_ttft_ms": 440.56,
+              "requests": [
+                {
+                  "req_id": 0,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26736.164183045,
+                  "t_first": 26736.748747098,
+                  "t_end": 26750.000565953,
+                  "ttft_ms": 584.56,
+                  "decode_time_s": 13.2518,
+                  "tpot_ms": 51.97,
+                  "decode_tok_s": 19.24,
+                  "prefill_tok_s": 631.24,
+                  "e2e_s": 13.8364,
+                  "output_snippet": " RD RDMA RDMA networks RDMA networks, RDMA networks, metadat"
+                },
+                {
+                  "req_id": 1,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26736.163926715,
+                  "t_first": 26736.460491443,
+                  "t_end": 26750.000484993,
+                  "ttft_ms": 296.56,
+                  "decode_time_s": 13.54,
+                  "tpot_ms": 53.1,
+                  "decode_tok_s": 18.83,
+                  "prefill_tok_s": 1244.25,
+                  "e2e_s": 13.8366,
+                  "output_snippet": " spatial spatial locality spatial locality within spatial lo"
+                }
+              ]
+            }
+          ]
+        },
+        "C4": {
+          "concurrency": 4,
+          "agg_decode_tok_s": {
+            "median": 71.1,
+            "min": 71.1,
+            "max": 71.24,
+            "mean": 71.15,
+            "stdev": 0.08,
+            "cv": 0.11
+          },
+          "avg_per_req_decode_tok_s": {
+            "median": 18.38,
+            "min": 18.38,
+            "max": 18.41,
+            "mean": 18.39,
+            "stdev": 0.02,
+            "cv": 0.09
+          },
+          "avg_tpot_ms": {
+            "median": 54.43,
+            "min": 54.32,
+            "max": 54.43,
+            "mean": 54.39,
+            "stdev": 0.06,
+            "cv": 0.12
+          },
+          "avg_ttft_ms": {
+            "median": 821.42,
+            "min": 819.34,
+            "max": 822.0,
+            "mean": 820.92,
+            "stdev": 1.4,
+            "cv": 0.17
+          },
+          "batch_e2e_s": {
+            "median": 14.7,
+            "min": 14.67,
+            "max": 14.7,
+            "mean": 14.69,
+            "stdev": 0.02,
+            "cv": 0.11
+          },
+          "batches": [
+            {
+              "concurrency": 4,
+              "decode_interval_s": 14.3744,
+              "batch_e2e_s": 14.6741,
+              "total_completion_tokens": 1024,
+              "agg_decode_tok_s": 71.24,
+              "avg_per_req_decode_tok_s": 18.41,
+              "avg_tpot_ms": 54.32,
+              "avg_ttft_ms": 822.0,
+              "requests": [
+                {
+                  "req_id": 0,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26768.552376258,
+                  "t_first": 26768.851860754,
+                  "t_end": 26783.225636627,
+                  "ttft_ms": 299.48,
+                  "decode_time_s": 14.3738,
+                  "tpot_ms": 56.37,
+                  "decode_tok_s": 17.74,
+                  "prefill_tok_s": 1232.12,
+                  "e2e_s": 14.6733,
+                  "output_snippet": " RD RDMA RDMA networks RDMA networks, RDMA networks, metadat"
+                },
+                {
+                  "req_id": 1,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26768.552809652,
+                  "t_first": 26769.54883796,
+                  "t_end": 26783.22602191,
+                  "ttft_ms": 996.03,
+                  "decode_time_s": 13.6772,
+                  "tpot_ms": 53.64,
+                  "decode_tok_s": 18.64,
+                  "prefill_tok_s": 370.47,
+                  "e2e_s": 14.6732,
+                  "output_snippet": " spatial spatial locality spatial locality within spatial lo"
+                },
+                {
+                  "req_id": 2,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26768.552523863,
+                  "t_first": 26769.548513574,
+                  "t_end": 26783.226133079,
+                  "ttft_ms": 995.99,
+                  "decode_time_s": 13.6776,
+                  "tpot_ms": 53.64,
+                  "decode_tok_s": 18.64,
+                  "prefill_tok_s": 370.49,
+                  "e2e_s": 14.6736,
+                  "output_snippet": " discrete discrete syndrome discrete syndrome patterns discr"
+                },
+                {
+                  "req_id": 3,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26768.552177801,
+                  "t_first": 26769.548684984,
+                  "t_end": 26783.226304025,
+                  "ttft_ms": 996.51,
+                  "decode_time_s": 13.6776,
+                  "tpot_ms": 53.64,
+                  "decode_tok_s": 18.64,
+                  "prefill_tok_s": 370.29,
+                  "e2e_s": 14.6741,
+                  "output_snippet": " up upw upwelling upwelling. upwelling. These upwelling. The"
+                }
+              ]
+            },
+            {
+              "concurrency": 4,
+              "decode_interval_s": 14.4027,
+              "batch_e2e_s": 14.7001,
+              "total_completion_tokens": 1024,
+              "agg_decode_tok_s": 71.1,
+              "avg_per_req_decode_tok_s": 18.38,
+              "avg_tpot_ms": 54.43,
+              "avg_ttft_ms": 819.34,
+              "requests": [
+                {
+                  "req_id": 0,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26783.228461188,
+                  "t_first": 26784.221969952,
+                  "t_end": 26797.92816541,
+                  "ttft_ms": 993.51,
+                  "decode_time_s": 13.7062,
+                  "tpot_ms": 53.75,
+                  "decode_tok_s": 18.6,
+                  "prefill_tok_s": 371.41,
+                  "e2e_s": 14.6997,
+                  "output_snippet": " RD RDMA RDMA networks RDMA networks, RDMA networks, metadat"
+                },
+                {
+                  "req_id": 1,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26783.228935148,
+                  "t_first": 26784.222146275,
+                  "t_end": 26797.928063488,
+                  "ttft_ms": 993.21,
+                  "decode_time_s": 13.7059,
+                  "tpot_ms": 53.75,
+                  "decode_tok_s": 18.61,
+                  "prefill_tok_s": 371.52,
+                  "e2e_s": 14.6991,
+                  "output_snippet": " spatial spatial locality spatial locality within spatial lo"
+                },
+                {
+                  "req_id": 2,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26783.228600819,
+                  "t_first": 26783.525644332,
+                  "t_end": 26797.928294642,
+                  "ttft_ms": 297.04,
+                  "decode_time_s": 14.4027,
+                  "tpot_ms": 56.48,
+                  "decode_tok_s": 17.71,
+                  "prefill_tok_s": 1242.24,
+                  "e2e_s": 14.6997,
+                  "output_snippet": " discrete discrete syndrome discrete syndrome patterns discr"
+                },
+                {
+                  "req_id": 3,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26783.228217652,
+                  "t_first": 26784.221797691,
+                  "t_end": 26797.927594596,
+                  "ttft_ms": 993.58,
+                  "decode_time_s": 13.7058,
+                  "tpot_ms": 53.75,
+                  "decode_tok_s": 18.61,
+                  "prefill_tok_s": 371.38,
+                  "e2e_s": 14.6994,
+                  "output_snippet": " up upw upwelling upwelling. upwelling. These upwelling. The"
+                }
+              ]
+            },
+            {
+              "concurrency": 4,
+              "decode_interval_s": 14.403,
+              "batch_e2e_s": 14.7026,
+              "total_completion_tokens": 1024,
+              "agg_decode_tok_s": 71.1,
+              "avg_per_req_decode_tok_s": 18.38,
+              "avg_tpot_ms": 54.43,
+              "avg_ttft_ms": 821.42,
+              "requests": [
+                {
+                  "req_id": 0,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26797.93036109,
+                  "t_first": 26798.925720366,
+                  "t_end": 26812.631663828,
+                  "ttft_ms": 995.36,
+                  "decode_time_s": 13.7059,
+                  "tpot_ms": 53.75,
+                  "decode_tok_s": 18.61,
+                  "prefill_tok_s": 370.72,
+                  "e2e_s": 14.7013,
+                  "output_snippet": " RD RDMA RDMA networks RDMA networks, RDMA networks, metadat"
+                },
+                {
+                  "req_id": 1,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26797.930503319,
+                  "t_first": 26798.229750152,
+                  "t_end": 26812.632486022,
+                  "ttft_ms": 299.25,
+                  "decode_time_s": 14.4027,
+                  "tpot_ms": 56.48,
+                  "decode_tok_s": 17.7,
+                  "prefill_tok_s": 1233.1,
+                  "e2e_s": 14.702,
+                  "output_snippet": " spatial spatial locality spatial locality within spatial lo"
+                },
+                {
+                  "req_id": 2,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26797.930794214,
+                  "t_first": 26798.92607539,
+                  "t_end": 26812.632659503,
+                  "ttft_ms": 995.28,
+                  "decode_time_s": 13.7066,
+                  "tpot_ms": 53.75,
+                  "decode_tok_s": 18.6,
+                  "prefill_tok_s": 370.75,
+                  "e2e_s": 14.7019,
+                  "output_snippet": " discrete discrete syndrome discrete syndrome patterns discr"
+                },
+                {
+                  "req_id": 3,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 256,
+                  "t_start": 26797.930132472,
+                  "t_first": 26798.925910783,
+                  "t_end": 26812.632773245,
+                  "ttft_ms": 995.78,
+                  "decode_time_s": 13.7069,
+                  "tpot_ms": 53.75,
+                  "decode_tok_s": 18.6,
+                  "prefill_tok_s": 370.56,
+                  "e2e_s": 14.7026,
+                  "output_snippet": " up upw upwelling upwelling. upwelling. These upwelling. The"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "telemetry_post": {
+      "raw": "============================ ROCm System Management Interface ============================\n====================================== Temperature =======================================\nGPU[0]\t\t: Temperature (Sensor edge) (C): 76.0\nGPU[0]\t\t: Temperature (Sensor junction) (C): 93.0\nGPU[0]\t\t: Temperature (Sensor memory) (C): 85.0\nGPU[1]\t\t: Temperature (Sensor edge) (C): 67.0\nGPU[1]\t\t: Temperature (Sensor junction) (C): 87.0\nGPU[1]\t\t: Temperature (Sensor memory) (C): 78.0\n==========================================================================================\n=================================== % time GPU is busy ===================================\nGPU[0]\t\t: GPU use (%): 100\nGPU[1]\t\t: GPU use (%): 100\n==========================================================================================\n================================== End of ROCm SMI Log ===================================",
+      "gpus": [
+        {
+          "edge_temp_c": 67.0,
+          "junction_temp_c": 87.0,
+          "mem_temp_c": 78.0,
+          "gpu_use_pct": 100.0
+        },
+        {
+          "gpu_use_pct": 100.0
+        }
+      ]
+    },
+    "dmesg_aer": ""
+  }
+}

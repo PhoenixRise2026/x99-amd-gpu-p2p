@@ -19,7 +19,7 @@ This directory contains the exact patch that was applied, built, and thoroughly 
   * GPUs: Dual AMD Radeon AI PRO R9700 (32 GiB GDDR6, gfx1201) in PCIe 3.0 x16 slots
 * **Validation Date**: 2026-09-14 / 2026-09-15
 * **Validation Evidence**:
-  * TransferBench SDMA / GFX Push: ~10.29 GB/s bidirectional throughput
+  * TransferBench SDMA / GFX Push: ~10.29 GB/s per-direction unidirectional peer throughput
   * RCCL AllReduce: ~9.49 GB/s bus bandwidth (large size sweep 1M-1024M)
   * HIP IPC: 100% data verification across 1M, 16M, and 64M transfers
   * Error Counters: 0 DMAR faults, 0 PCIe AER errors, 0 GPU resets, 0 ring timeouts

@@ -41,7 +41,7 @@ If any checks fail, follow the troubleshooting procedures below.
 - Kernel logs contain messages rejecting P2PDMA distance calculation.
 
 ### Root Cause
-The running kernel does not have the Intel Broadwell Host Bridge (`8086:6f00`) in the `pci_p2pdma_whitelist[]` table in `drivers/pci/p2pdma.c`. Linux defaults to marking unlisted host bridges as `PCI_P2PDMA_NOT_CALCULATED` or `PCI_P2PDMA_THROUGH_HOST_BRIDGE` disallowed.
+The running kernel does not have the Intel Broadwell Host Bridge (`8086:6f00`) in the `pci_p2pdma_whitelist[]` table in `drivers/pci/p2pdma.c`. Without this whitelist entry, Linux PCI core rejects peer mapping across root ports (evaluating to `PCI_P2PDMA_MAP_NOT_SUPPORTED`).
 
 ### Resolution
 1. Verify kernel version:
@@ -59,7 +59,7 @@ The running kernel does not have the Intel Broadwell Host Bridge (`8086:6f00`) i
 ## 3. Issue: RCCL Falls Back to `PATH_SYS`
 
 ### Symptoms
-- `rccl-tests` reports AllReduce bus bandwidth around ~2.76 GB/s instead of ~9.5 GB/s.
+- `rccl-tests` reports AllReduce bus bandwidth degraded to host shared memory rates (e.g. ~1.8–2.8 GB/s via SHM fallback) instead of full direct peer bandwidth (~9.49 GB/s).
 - With `NCCL_DEBUG=INFO`, logs output:
   ```text
   Channel 00 : 0[0] -> 1[1] [receive] via NET/Socket or Host memory
@@ -123,15 +123,15 @@ If `SrcValid+`, `TransBlk+`, or `ReqRedir+` are enabled, ACS may prevent peer-to
 
 ### Resolution
 - In motherboard BIOS, configure PCIe ACS to allow peer-to-peer routing or disable Request Redirect between PCIe slots.
-- In Linux, verify `pci=noacs` only if supported and required by the platform firmware.
+- In Linux, as an advanced non-default diagnostic tool, specific ACS request redirection can be tested using the kernel parameter `pci=disable_acs_redir=<pci_dev>` (e.g. target root port BDFs). Do not attempt broad global ACS disabling.
 
 ---
 
 ## 6. Verification Checklist
 
 Before deploying production distributed workloads, verify:
-- [ ] `./scripts/diagnose.sh` reports `DIRECT_P2P_READY = YES`.
-- [ ] `./scripts/run-transferbench.sh` achieves ~10.29 GB/s bidirectional P2P.
+- [ ] `./scripts/diagnose.sh --full` reports `DIRECT_P2P_READY = YES` (default mode reports `INCONCLUSIVE` until active peer transfers are run).
+- [ ] `./scripts/run-transferbench.sh` achieves ~10.29 GB/s per-direction unidirectional peer throughput.
 - [ ] `./scripts/check-hip-ipc.sh` completes 100% PASS with 0 memory errors.
 - [ ] `./scripts/run-rccl.sh` achieves ~9.49 GB/s AllReduce bus bandwidth.
 - [ ] `./scripts/collect-errors.sh` confirms 0 AER / DMAR / amdgpu errors.

@@ -4,7 +4,7 @@
 
 This case study documents real-world LLM tensor-parallel inference (TP=2) running on dual AMD Radeon AI PRO R9700 GPUs across Intel Broadwell-EP Root Ports using **SGLang v0.5.18**.
 
-All benchmark data in this case study is strictly locked to the verified empirical trial results recorded in `results/x99-r9700-qwen38.md` and raw execution trace `real_llm_tp2_stock_vs_p2p_ab_results.json`.
+All benchmark data in this case study is strictly locked to the verified empirical trial results recorded in `results/x99-r9700-qwen38.md` and raw execution trace `examples/broadwell-r9700/real_llm_tp2_stock_vs_p2p_ab_results.json`.
 
 ---
 
