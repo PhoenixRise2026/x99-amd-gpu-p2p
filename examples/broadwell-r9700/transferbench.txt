@@ -1,0 +1,54 @@
+# SANITIZED = YES
+# SOURCE_SHA256 = f9dd433a1e9cfa4d4bbdfb027ca5e4fc76e10745585ee581b7e42d7be877f6b5
+# SOURCE_DATE = 2026-09-17 01:40:56 UTC
+# REDACTIONS = local paths / hostname only
+
+================================================================================
+TransferBench Peer-to-Peer Benchmark Matrix Results
+Host: reference-host | Intel Xeon E5-2697A v4 | Dual AMD Radeon AI PRO R9700
+Kernel: 6.8.12-r9700-p2p-dma44 | VT-d Translated (DMA-FQ)
+================================================================================
+
+Theoretical Single-Direction Bandwidth (PCIe 3.0 x16): 15.754 GB/s
+
+GROUP A: DMA / SDMA P2P Engine
+--------------------------------------------------------------------------------
+Case: dma_0_to_1 (Direction: GPU 0 -> GPU 1)
+  Size:    67,108,864 bytes (64 MiB)    Avg: 10.216 GB/s
+  Size:   268,435,456 bytes (256 MiB)   Avg: 10.279 GB/s
+  Size:   536,870,912 bytes (512 MiB)   Avg: 10.288 GB/s
+  Size: 1,073,741,824 bytes (1024 MiB)  Avg: 10.293 GB/s (Peak: 10.295 GB/s)
+
+Case: dma_1_to_0 (Direction: GPU 1 -> GPU 0)
+  Size:    67,108,864 bytes (64 MiB)    Avg: 10.244 GB/s
+  Size:   268,435,456 bytes (256 MiB)   Avg: 10.259 GB/s
+  Size:   536,870,912 bytes (512 MiB)   Avg: 10.288 GB/s
+  Size: 1,073,741,824 bytes (1024 MiB)  Avg: 10.294 GB/s (Peak: 10.295 GB/s)
+
+
+GROUP B: GFX PUSH P2P Engine
+--------------------------------------------------------------------------------
+Case: push_0_to_1 (Direction: GPU 0 -> GPU 1)
+  Size:    67,108,864 bytes (64 MiB)    Avg: 10.284 GB/s
+  Size:   268,435,456 bytes (256 MiB)   Avg: 10.289 GB/s
+  Size:   536,870,912 bytes (512 MiB)   Avg: 10.291 GB/s
+  Size: 1,073,741,824 bytes (1024 MiB)  Avg: 10.295 GB/s (Peak: 10.295 GB/s)
+
+Case: push_1_to_0 (Direction: GPU 1 -> GPU 0)
+  Size:    67,108,864 bytes (64 MiB)    Avg: 10.284 GB/s
+  Size:   268,435,456 bytes (256 MiB)   Avg: 10.284 GB/s
+  Size:   536,870,912 bytes (512 MiB)   Avg: 10.277 GB/s
+  Size: 1,073,741,824 bytes (1024 MiB)  Avg: 10.287 GB/s (Peak: 10.294 GB/s)
+
+
+GROUP C: GFX PULL P2P Engine
+--------------------------------------------------------------------------------
+Case: pull_0_to_1 (Direction: GPU 0 -> GPU 1)
+  Size:    67,108,864 bytes (64 MiB)    Avg:  3.138 GB/s
+  Size:   268,435,456 bytes (256 MiB)   Avg:  3.141 GB/s
+  Size:   536,870,912 bytes (512 MiB)   Avg:  3.142 GB/s
+  Size: 1,073,741,824 bytes (1024 MiB)  Avg:  3.142 GB/s
+
+Summary:
+- SDMA / GFX Push achieves ~10.29 GB/s across Root Ports (approaching the practical PCIe 3.0 x16 ceiling).
+- Zero bus lockups, zero timeout events, zero system crashes.

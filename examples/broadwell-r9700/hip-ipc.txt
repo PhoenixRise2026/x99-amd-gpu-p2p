@@ -1,0 +1,63 @@
+# SANITIZED = YES
+# SOURCE_SHA256 = a0f28e2170b691a56ea764a8c385802117fc0be31952a1ba8e5f2cf2c35b8098
+# SOURCE_DATE = 2026-09-15 00:04:00 UTC
+# REDACTIONS = local paths / hostname only
+
+================================================================================
+HIP IPC Cross-Process Memory Handle Validation
+Binary: hip_ipc_standalone (exec-based independent process architecture)
+Host: reference-host | Intel Xeon E5-2697A v4 | Dual AMD Radeon AI PRO R9700
+Kernel: 6.8.12-r9700-p2p-dma44 | VT-d Translated (DMA-FQ)
+================================================================================
+
+DIRECTION: GPU 0 (Exporter) -> GPU 1 (Importer)
+--------------------------------------------------------------------------------
+[Test 1] 1 MiB (1,048,576 bytes)
+  Exporter Exit Code: 0
+  Importer Exit Code: 0
+  Forward Read Verify:  PASS (Pattern matches expected bitmask)
+  Reverse Write Verify: PASS (Pattern matches expected bitmask)
+  Hardware Health:      0 DMAR faults, 0 AER errors
+
+[Test 2] 16 MiB (16,777,216 bytes)
+  Exporter Exit Code: 0
+  Importer Exit Code: 0
+  Forward Read Verify:  PASS (Pattern matches expected bitmask)
+  Reverse Write Verify: PASS (Pattern matches expected bitmask)
+  Hardware Health:      0 DMAR faults, 0 AER errors
+
+[Test 3] 64 MiB (67,108,864 bytes)
+  Exporter Exit Code: 0
+  Importer Exit Code: 0
+  Forward Read Verify:  PASS (Pattern matches expected bitmask)
+  Reverse Write Verify: PASS (Pattern matches expected bitmask)
+  Hardware Health:      0 DMAR faults, 0 AER errors
+
+
+DIRECTION: GPU 1 (Exporter) -> GPU 0 (Importer)
+--------------------------------------------------------------------------------
+[Test 4] 1 MiB (1,048,576 bytes)
+  Exporter Exit Code: 0
+  Importer Exit Code: 0
+  Forward Read Verify:  PASS (Pattern matches expected bitmask)
+  Reverse Write Verify: PASS (Pattern matches expected bitmask)
+  Hardware Health:      0 DMAR faults, 0 AER errors
+
+[Test 5] 16 MiB (16,777,216 bytes)
+  Exporter Exit Code: 0
+  Importer Exit Code: 0
+  Forward Read Verify:  PASS (Pattern matches expected bitmask)
+  Reverse Write Verify: PASS (Pattern matches expected bitmask)
+  Hardware Health:      0 DMAR faults, 0 AER errors
+
+[Test 6] 64 MiB (67,108,864 bytes)
+  Exporter Exit Code: 0
+  Importer Exit Code: 0
+  Forward Read Verify:  PASS (Pattern matches expected bitmask)
+  Reverse Write Verify: PASS (Pattern matches expected bitmask)
+  Hardware Health:      0 DMAR faults, 0 AER errors
+
+Summary:
+- 6 out of 6 independent cross-process test cases PASSED.
+- Zero HSA memory attachment errors (HSA_STATUS_ERROR_INVALID_ARGUMENT absent).
+- 100% data integrity verified in both directions.

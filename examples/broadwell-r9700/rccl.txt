@@ -1,0 +1,38 @@
+# SANITIZED = YES
+# SOURCE_SHA256 = 3a04c538cb3ef9081e7d819c99182314757c320d306b3a985ddbc0cb4cb94f0e
+# SOURCE_DATE = 2026-09-15 00:15:00 UTC
+# REDACTIONS = local paths / hostname only
+
+================================================================================
+RCCL AllReduce Collective Bandwidth Sweep (Rank=2)
+Library: librccl.so.1.0 with Host Bridge P2P Override Patch
+Host: reference-host | Intel Xeon E5-2697A v4 | Dual AMD Radeon AI PRO R9700
+Kernel: 6.8.12-r9700-p2p-dma44 | VT-d Translated (DMA-FQ)
+Environment: NCCL_P2P_LEVEL=PHB NCCL_DEBUG=INFO
+================================================================================
+
+Topology Transport Confirmation:
+  NCCL INFO Channel 00/02 : 0 1
+  NCCL INFO Channel 01/02 : 0 1
+  NCCL INFO Check P2P Type isAllDirectP2p 1 directMode 1
+  NCCL INFO Channel 00 : 0[5000] -> 1[8000] via P2P/IPC comm 0x... nRanks 02
+  NCCL INFO Channel 01 : 0[5000] -> 1[8000] via P2P/IPC comm 0x... nRanks 02
+  (Zero SHM fallback observed across all message sizes)
+
+Performance Sweep (Rank=2 Ring AllReduce):
+--------------------------------------------------------------------------------
+Message Size    Bytes Transferred    Hardware Time    Bus Bandwidth    Verify
+--------------------------------------------------------------------------------
+   1 MiB              1,048,576         0.237 ms        4.418 GB/s      PASS
+   4 MiB              4,194,304         0.603 ms        6.956 GB/s      PASS
+  16 MiB             16,777,216         1.900 ms        8.832 GB/s      PASS
+  64 MiB             67,108,864         7.171 ms        9.359 GB/s      PASS
+ 256 MiB            268,435,456        28.286 ms        9.490 GB/s      PASS
+ 512 MiB            536,870,912        56.546 ms        9.494 GB/s      PASS
+1024 MiB          1,073,741,824       113.194 ms        9.486 GB/s      PASS
+--------------------------------------------------------------------------------
+
+Summary:
+- Steady-state large-message AllReduce bus bandwidth: ~9.49 GB/s.
+- 100% data correctness verified at every size tier.
+- Zero kernel errors (0 DMAR / 0 AER) during the entire characterization sweep.
