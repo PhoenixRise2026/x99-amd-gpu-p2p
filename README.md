@@ -1,5 +1,7 @@
 # x99-amd-gpu-p2p
 
+English | [简体中文](README.zh-CN.md)
+
 **Linux P2PDMA, Direct HIP IPC & RCCL Collective Acceleration on Intel Broadwell-EP (X99) with AMD RDNA4 GPUs**
 
 ---
