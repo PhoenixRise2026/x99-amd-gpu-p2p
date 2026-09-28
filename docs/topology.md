@@ -19,8 +19,7 @@ Intel Xeon E5-2697A v4 (Socket 0, NUMA node 0)
 > [!NOTE]
 > **PCI Database Label Clarification**:
 > In standard Linux `lspci` outputs, devices `1002:1478` and `1002:1479` may appear with the string `"Navi 10 XL Upstream/Downstream Port of PCI Express Switch"`.
-> The "Navi 10 XL" string is simply the PCI ID database label for this integrated AMD PCIe bridge function and **does not describe the R9700 GPU architecture** (which is RDNA4 / gfx1201).
-> The motherboard itself does not contain a Navi switch; this bridge is physically integrated on the R9700 add-in card.
+> The "Navi 10 XL" string is simply the PCI ID database label for the AMD PCIe bridge/switch function `1002:1478/1479` and **does not describe the R9700 GPU architecture** (which is RDNA4 / gfx1201).
 
 ## Key Verified Topology Facts
 

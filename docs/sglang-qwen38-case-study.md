@@ -30,10 +30,15 @@ Using **Qwen3.8-27B-AWQ** under **SGLang v0.5.18** with Tensor Parallelism 2 (TP
 - **AMDGPU Driver**: Stock `DMA_BIT_MASK(44)` (no custom GMC hack)
 - **IOMMU**: Intel VT-d enabled in Translated mode
 - **Inference Server**: SGLang v0.5.18 (commit `07eb3ec8`)
-- **Attention Backend**: ROCm FlashAttention (CK / Composable Kernel)
-- **AWQ / GEMM Kernels**: RDNA4-optimized Composable Kernel implementations
-- **AITER Status**: `AITER_ACTIVE = NO` in validated environment
-- **Triton Status**: Triton runtime inactive for production decode kernels
+- **Attention Backend**: Triton (`--attention-backend triton`)
+- **Decode Stack**: Mixed Triton/HIP
+  - Full Attention: Triton
+  - GDN / Recurrent Path: Triton (`torch_triton_sequential_recurrent`)
+  - Tree-Verify: Triton (`tree_verify_attention_fwd / Patch065`)
+  - AWQ Batched / Prefill (M > 1): Triton (`triton_awq_gemm`)
+  - AWQ Single-Token Decode (M = 1): Native HIP GEMV (`awq_gemv_bf16_hip`)
+- **AITER Status**: `AITER_ACTIVE = NO` (AITER is not installed or active in the validated SGLang v0.5.18 environment; this describes the validated software stack only and should not be interpreted as a hardware support limitation for AITER on gfx1201)
+- **Triton Version**: 3.6.0 (ACTIVE)
 
 ---
 
@@ -98,11 +103,11 @@ To launch SGLang with Direct P2P enabled on dual R9700:
 export HIP_VISIBLE_DEVICES=0,1
 export NCCL_P2P_LEVEL=PHB
 export NCCL_BUFFSIZE=8388608
-export SGLANG_USE_CK=1
 
 python3 -m sglang.launch_server \
   --model-path /models/Qwen3.8-27B-AWQ \
   --tp 2 \
+  --attention-backend triton \
   --host 0.0.0.0 \
   --port 8000 \
   --mem-fraction-static 0.88 \

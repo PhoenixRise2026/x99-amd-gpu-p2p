@@ -19,6 +19,5 @@ It is critical to distinguish between:
    - At runtime, the user provides the environment override:
      ```bash
      export NCCL_P2P_LEVEL=PHB
-     # or export NCCL_P2P_LEVEL=SYS
      ```
    - On the Broadwell-EP reference testbed, `NCCL_P2P_LEVEL=PHB` enables RCCL to route AllReduce and SendRecv collectives directly over PCIe P2P/IPC (`isAllDirectP2p = 1`, `Channel 00 : ... via P2P/IPC`), completely eliminating SHM fallback and delivering ~9.49 GB/s large-message bus bandwidth.

@@ -37,10 +37,10 @@ To avoid common misconceptions and clarify historical artifacts:
    The validated kernel **does not contain a custom 44-bit DMA patch**. AMDGPU natively uses its stock `DMA_BIT_MASK(44)`. The string `dma44` in historical local kernel build tags is merely a build name from an earlier experiment where an unstable 48-bit DMA hack was tested and reverted. No custom GMC driver modification is needed or used.
 2. **IOMMU Addressing**:
    Intel VT-d must be enabled in **Translated mode** (`intel_iommu=on`). The IOMMU remaps GPU DMA into a 39-bit or 44-bit IOVA domain, ensuring compatibility with the RDNA4 hardware address space without silent 48-bit truncation.
-3. **AITER Status**:
-   In our validated SGLang v0.5.18 environment, `AITER_ACTIVE = NO`. Decode runs via optimized ROCm Composable Kernel (CK) backends. This is a software deployment configuration, not a hardware limitation of RDNA4.
-4. **PCIe Switch Device String**:
-   On R9700 cards, `lspci` displays an internal bridge labeled `"Navi 10 XL Upstream/Downstream Port of PCI Express Switch (1002:1478/1479)"`. This is a legacy PCI ID database text label for the on-board PCIe switch; the GPU core itself is RDNA4 gfx1201.
+3. **AITER & Runtime Backend**:
+   AITER is not installed or active (`AITER_ACTIVE = NO`) in the validated SGLang v0.5.18 environment. The validated decode stack is mixed Triton/HIP (Full Attention: Triton; GDN/recurrent: Triton; Tree-Verify: Triton; AWQ M>1: Triton; AWQ M=1: native HIP GEMV). This describes the validated software stack only and should not be interpreted as a hardware support limitation for AITER on gfx1201.
+4. **PCIe Bridge Device String**:
+   In `lspci`, the bridge functions `1002:1478/1479` may display the label `"Navi 10 XL Upstream/Downstream Port of PCI Express Switch"`. The "Navi 10 XL" string is simply the PCI ID database label for the AMD PCIe bridge/switch function `1002:1478/1479` and does not describe the R9700 GPU architecture (which is RDNA4 gfx1201).
 
 ---
 

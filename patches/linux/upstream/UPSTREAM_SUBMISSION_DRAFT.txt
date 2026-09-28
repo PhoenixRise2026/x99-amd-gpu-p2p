@@ -22,9 +22,11 @@ UPSTREAM_SUBMISSION_READY: NO
 RATIONALE:
 While this patch cleanly applies to torvalds/linux mainline master and
 passes checkpatch.pl with 0 errors and 0 warnings, it has NOT yet been
-boot-tested on a pure mainline kernel build without distribution patches.
-Per operational discipline, DO NOT submit upstream until a pure mainline
-kernel test has been executed and verified.
+boot-tested on a pure mainline kernel build. The kernel can be built on
+another machine, but functional validation must be performed on the
+reference Broadwell-EP 8086:6f00 host or an equivalent topology.
+Per operational discipline, DO NOT submit upstream until physical verification
+on the required hardware topology is completed.
 ======================================================================
 
 SUBJECT:

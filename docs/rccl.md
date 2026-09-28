@@ -43,24 +43,45 @@ informs RCCL that transfers crossing the PCIe Host Bridge are permitted to use d
 
 ### The Issue in Stock RCCL 7.2.0
 
-In stock ROCm 7.2.0 RCCL (`src/graph/topo.cc`), hardcoded platform heuristics (such as `platformLimits()`) could unilaterally clamp the maximum allowable P2P level *after* reading user environment variables. Consequently, even when the user specified `NCCL_P2P_LEVEL=PHB`, the internal variable `maxP2pLevel` could be overridden back to `PATH_SYS`.
+In upstream RCCL (`src/graph/paths.cc`), `ncclGetUserP2pLevel(&p2pLevel)` was called before evaluating platform and architecture constraints:
+```cpp
+  int p2pLevel = PATH_SYS;
+
+  // User override was queried here in stock code:
+  // NCCLCHECK(ncclGetUserP2pLevel(&p2pLevel));
+
+  if (p2pLevel == PATH_SYS) {
+    p2pLevel = PATH_PXB;
+  }
+```
+Because the `PATH_SYS` -> `PATH_PXB` clamp occurred *after* querying the environment, an explicit user configuration like `NCCL_P2P_LEVEL=PHB` (or `SYS`) could be overridden back to `PATH_PXB` (level 3). On systems where dual GPUs reside across distinct root ports under the same host bridge (`PATH_PHB` / `PATH_SYS`), this demotion forced RCCL to fall back to SHM staging.
 
 ### The Fix
 
-The patch in `patches/rccl/0001-graph-honor-explicit-p2p-level-after-platform-limit.patch` ensures that if `NCCL_P2P_LEVEL` is explicitly configured by the user via environment variable, RCCL respects that explicit configuration even if platform autodetection rules would have defaulted to host fallback.
+The patch `patches/rccl/0001-graph-honor-explicit-p2p-level-after-platform-limit.patch` relocates `ncclGetUserP2pLevel(&p2pLevel)` to execute *after* the default clamp, ensuring explicit user override requests take precedence:
 
 ```diff
---- a/src/graph/topo.cc
-+++ b/src/graph/topo.cc
-@@ -1045,6 +1045,9 @@ ncclResult_t ncclTopoComputePaths(struct ncclTopoSystem* system, struct ncclPeer
-     }
+--- a/src/graph/paths.cc
++++ b/src/graph/paths.cc
+@@ -322,9 +322,6 @@ ncclResult_t ncclTopoCheckP2p(struct ncclComm* comm, struct ncclTopoSystem* syst
+   // In general, use P2P whenever we can.
+   int p2pLevel = PATH_SYS;
+
+-  // User override
+-  NCCLCHECK(ncclGetUserP2pLevel(&p2pLevel));
+-
+   // Don't use P2P through ARM CPUs
+   int arch, vendor, model;
+   NCCLCHECK(ncclTopoCpuType(system, &arch, &vendor, &model));
+@@ -336,6 +333,9 @@ ncclResult_t ncclTopoCheckP2p(struct ncclComm* comm, struct ncclTopoSystem* syst
+     p2pLevel = PATH_PXB;
    }
 
-+  // If user explicitly specified NCCL_P2P_LEVEL, ensure platform limits
-+  // do not silently override the user's manual override.
-+  if (userP2pLevel != -1) {
-+    maxP2pLevel = userP2pLevel;
-+  }
++  // User override
++  NCCLCHECK(ncclGetUserP2pLevel(&p2pLevel));
++
+   // Compute the PCI distance and compare with the p2pLevel.
+   if (path->type <= p2pLevel) *p2p = 1;
 ```
 
 ---
