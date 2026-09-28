@@ -1,0 +1,31 @@
+# Binaries and compiled objects
+*.so
+*.so.*
+*.ko
+*.ko.*
+*.deb
+*.whl
+*.o
+*.a
+
+# Build and staging directories
+build/
+dist/
+__pycache__/
+*.pyc
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Environment files and credentials
+.env
+*.pem
+*.key
+*.token
+
+# Log files and local test caches
+*.log
+triton_cache/
+.cache/
