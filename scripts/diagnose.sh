@@ -16,6 +16,11 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PREREQS_PASS=1
 
+TEST_MOCK_ACTIVE=0
+if [[ -n "${TEST_MOCK_HIP_IPC:-}" || -n "${TEST_MOCK_TRANSFERBENCH:-}" || -n "${TEST_MOCK_RCCL:-}" || -n "${TEST_MOCK_IOMMU:-}" || -n "${TEST_MOCK_GPU_COUNT:-}" || -n "${TEST_MOCK_KERNEL_ERRORS:-}" ]]; then
+    TEST_MOCK_ACTIVE=1
+fi
+
 echo "=========================================="
 echo "=== AMD GPU P2P Platform Check ==="
 echo "=========================================="
@@ -53,21 +58,28 @@ echo
 echo "--- 3. GPUs & Root Ports ---"
 GPU_COUNT=0
 GPUS=()
-while read -r line; do
-    [[ -z "$line" ]] && continue
-    RAW_BDF=$(echo "$line" | awk '{print $1}')
-    if [[ "$RAW_BDF" =~ ^[0-9a-fA-F]{4}: ]]; then
-        BDF="$RAW_BDF"
-    else
-        BDF="0000:${RAW_BDF}"
-    fi
-    GPUS+=("$BDF")
-    GPU_COUNT=$((GPU_COUNT + 1))
-    SYS_PATH="/sys/bus/pci/devices/${BDF}"
-    SPEED=$(cat "${SYS_PATH}/current_link_speed" 2>/dev/null || echo "Unknown")
-    WIDTH=$(cat "${SYS_PATH}/current_link_width" 2>/dev/null || echo "Unknown")
-    echo "  GPU $((GPU_COUNT-1)): $BDF | Link: $SPEED x$WIDTH"
-done < <(lspci -D -d 1002:7551 2>/dev/null || true)
+if [[ -n "${TEST_MOCK_GPU_COUNT:-}" ]]; then
+    GPU_COUNT="$TEST_MOCK_GPU_COUNT"
+    echo "  [TEST MOCK] Injected GPU Count: $GPU_COUNT"
+    if [[ $GPU_COUNT -ge 1 ]]; then GPUS+=("0000:05:00.0"); fi
+    if [[ $GPU_COUNT -ge 2 ]]; then GPUS+=("0000:08:00.0"); fi
+else
+    while read -r line; do
+        [[ -z "$line" ]] && continue
+        RAW_BDF=$(echo "$line" | awk '{print $1}')
+        if [[ "$RAW_BDF" =~ ^[0-9a-fA-F]{4}: ]]; then
+            BDF="$RAW_BDF"
+        else
+            BDF="0000:${RAW_BDF}"
+        fi
+        GPUS+=("$BDF")
+        GPU_COUNT=$((GPU_COUNT + 1))
+        SYS_PATH="/sys/bus/pci/devices/${BDF}"
+        SPEED=$(cat "${SYS_PATH}/current_link_speed" 2>/dev/null || echo "Unknown")
+        WIDTH=$(cat "${SYS_PATH}/current_link_width" 2>/dev/null || echo "Unknown")
+        echo "  GPU $((GPU_COUNT-1)): $BDF | Link: $SPEED x$WIDTH"
+    done < <(lspci -D -d 1002:7551 2>/dev/null || true)
+fi
 
 if [[ $GPU_COUNT -lt 2 ]]; then
     echo "  Status:   FAIL (Found $GPU_COUNT AMD R9700 GPUs; dual GPU required for P2P)"
@@ -101,21 +113,34 @@ echo
 # 5. DMA Mask and IOMMU
 echo "--- 5. DMA Mask & IOMMU ---"
 IOMMU_TRANSLATED=0
-if grep -q "Default domain type: Translated" /var/log/dmesg 2>/dev/null || journalctl -k -b 0 2>/dev/null | grep -q "Default domain type: Translated"; then
-    IOMMU_TRANSLATED=1
-    echo "  IOMMU:        Intel VT-d Translated (DMA-FQ)"
-elif grep -q "iommu=pt" /proc/cmdline 2>/dev/null; then
-    echo "  IOMMU:        Passthrough (iommu=pt active)"
+if [[ -n "${TEST_MOCK_IOMMU:-}" ]]; then
+    if [[ "$TEST_MOCK_IOMMU" == "TRANSLATED" ]]; then
+        IOMMU_TRANSLATED=1
+        echo "  IOMMU:        Intel VT-d Translated (TEST MOCK)"
+        echo "  Status:       PASS"
+    elif [[ "$TEST_MOCK_IOMMU" == "PASSTHROUGH" ]]; then
+        echo "  IOMMU:        Passthrough (TEST MOCK)"
+        echo "  Status:       WARN (Passthrough mode may expose physical addresses >44-bit)"
+        PREREQS_PASS=0
+    else
+        echo "  IOMMU:        Unknown / Unconfirmed (TEST MOCK: $TEST_MOCK_IOMMU)"
+        echo "  Status:       WARN (Cannot confirm Translated domain; fail-closed)"
+        PREREQS_PASS=0
+    fi
 else
-    echo "  IOMMU:        Translated / Standard (iommu=pt absent)"
-    IOMMU_TRANSLATED=1
-fi
-
-if [[ $IOMMU_TRANSLATED -eq 1 ]]; then
-    echo "  Status:       PASS"
-else
-    echo "  Status:       WARN (Passthrough mode may expose physical addresses >44-bit)"
-    PREREQS_PASS=0
+    if grep -q "Default domain type: Translated" /var/log/dmesg 2>/dev/null || (command -v journalctl >/dev/null 2>&1 && journalctl -k -b 0 2>/dev/null | grep -q "Default domain type: Translated"); then
+        IOMMU_TRANSLATED=1
+        echo "  IOMMU:        Intel VT-d Translated (confirmed by kernel log)"
+        echo "  Status:       PASS"
+    elif grep -q "iommu=pt" /proc/cmdline 2>/dev/null; then
+        echo "  IOMMU:        Passthrough (iommu=pt active)"
+        echo "  Status:       WARN (Passthrough mode may expose physical addresses >44-bit)"
+        PREREQS_PASS=0
+    else
+        echo "  IOMMU:        Unknown / Unconfirmed (iommu=pt absent, but no positive Translated confirmation in kernel log)"
+        echo "  Status:       WARN (Cannot confirm Translated DMA-FQ domain; fail-closed)"
+        PREREQS_PASS=0
+    fi
 fi
 
 for BDF in "${GPUS[@]}"; do
@@ -152,8 +177,11 @@ echo "--- 7. Kernel Error Counters ---"
 DMAR_FAULTS=0
 AER_ERRORS=0
 RESETS=0
+if [[ -n "${TEST_MOCK_KERNEL_ERRORS:-}" ]]; then
+    DMAR_FAULTS="$TEST_MOCK_KERNEL_ERRORS"
+fi
 if command -v journalctl >/dev/null 2>&1; then
-    DMAR_FAULTS=$(journalctl -k -b 0 2>/dev/null | grep -ciE "DMAR:.*fault" || true)
+    DMAR_FAULTS=$(( DMAR_FAULTS + $(journalctl -k -b 0 2>/dev/null | grep -ciE "DMAR:.*fault" || true) ))
     AER_ERRORS=$(journalctl -k -b 0 2>/dev/null | grep -ciE "AER:.*error" || true)
     RESETS=$(journalctl -k -b 0 2>/dev/null | grep -ciE "amdgpu:.*gpu reset" || true)
 fi
@@ -243,15 +271,18 @@ else
         TB_OUT=$("$TB_BIN" p2p 2>&1)
         TB_RET=$?
         set -e
-        if [[ $TB_RET -eq 0 ]]; then
-            TB_RESULT="PASS"
-            echo "  TransferBench execution: PASS"
-        else
+        if [[ $TB_RET -ne 0 ]] || echo "$TB_OUT" | grep -qiE "No valid transfers|error|failed"; then
             TB_RESULT="FAIL"
             echo "  TransferBench execution: FAIL"
+        elif echo "$TB_OUT" | grep -qE "([0-9]+\.[0-9]+ GB/s|GPU [0-9] -> GPU [0-9]|dma_[0-9]|push_[0-9])"; then
+            TB_RESULT="PASS"
+            echo "  TransferBench execution: PASS (Peer transfers measured)"
+        else
+            TB_RESULT="INCONCLUSIVE"
+            echo "  TransferBench execution: INCONCLUSIVE (exit 0, but no explicit peer bandwidth table detected)"
         fi
     else
-        echo "  [SKIP] TransferBench binary not found at default paths."
+        echo "  [SKIP] TransferBench binary not found at default paths (EXTERNAL_DEPENDENCY)."
         TB_RESULT="SKIP"
     fi
 fi
@@ -273,18 +304,23 @@ else
     if [[ -n "$RCCL_TEST_BIN" ]]; then
         set +e
         export NCCL_P2P_LEVEL=PHB
+        export NCCL_DEBUG=INFO
+        export NCCL_DEBUG_SUBSYS=INIT,ENV
         RCCL_OUT=$("$RCCL_TEST_BIN" -b 64M -e 64M -g 2 2>&1)
         RCCL_RET=$?
         set -e
-        if [[ $RCCL_RET -eq 0 ]] && ! echo "$RCCL_OUT" | grep -q "SHM"; then
-            RCCL_RESULT="PASS"
-            echo "  RCCL P2P AllReduce: PASS"
-        else
+        if [[ $RCCL_RET -ne 0 ]] || echo "$RCCL_OUT" | grep -qE "SHM|directMode 0|isAllDirectP2p 0"; then
             RCCL_RESULT="FAIL"
-            echo "  RCCL P2P AllReduce: FAIL"
+            echo "  RCCL P2P AllReduce: FAIL (SHM fallback or execution error)"
+        elif echo "$RCCL_OUT" | grep -qE "(via P2P|isAllDirectP2p 1|via P2P/IPC)"; then
+            RCCL_RESULT="PASS"
+            echo "  RCCL P2P AllReduce: PASS (P2P/IPC transport confirmed)"
+        else
+            RCCL_RESULT="INCONCLUSIVE"
+            echo "  RCCL P2P AllReduce: INCONCLUSIVE (exit 0, but no explicit P2P transport logs observed)"
         fi
     else
-        echo "  [SKIP] rccl-tests binary not found at default paths."
+        echo "  [SKIP] rccl-tests binary not found at default paths (EXTERNAL_DEPENDENCY)."
         RCCL_RESULT="SKIP"
     fi
 fi
@@ -315,14 +351,20 @@ echo "=========================================="
 if [[ $PREREQS_PASS -eq 0 || "$HIP_IPC_RESULT" == "FAIL" || "$TB_RESULT" == "FAIL" || "$RCCL_RESULT" == "FAIL" || $NEW_DMAR -gt 0 || $NEW_AER -gt 0 || $NEW_RESETS -gt 0 ]]; then
     echo "P2P_PREREQUISITES = $([[ $PREREQS_PASS -eq 1 ]] && echo PASS || echo FAIL)"
     echo "DIRECT_P2P_READY = NO"
-elif [[ "$HIP_IPC_RESULT" == "SKIP" || "$TB_RESULT" == "SKIP" || "$RCCL_RESULT" == "SKIP" ]]; then
+elif [[ "$HIP_IPC_RESULT" == "SKIP" || "$TB_RESULT" == "SKIP" || "$RCCL_RESULT" == "SKIP" || "$TB_RESULT" == "INCONCLUSIVE" || "$RCCL_RESULT" == "INCONCLUSIVE" ]]; then
     echo "P2P_PREREQUISITES = PASS"
     echo "DIRECT_P2P_READY = INCONCLUSIVE"
-    echo "Reason: One or more active benchmark tools were skipped (missing binary)."
+    echo "Reason: One or more active benchmark tools were skipped or inconclusive."
 elif [[ "$HIP_IPC_RESULT" == "PASS" && "$TB_RESULT" == "PASS" && "$RCCL_RESULT" == "PASS" && $NEW_DMAR -eq 0 && $NEW_AER -eq 0 && $NEW_RESETS -eq 0 ]]; then
     echo "P2P_PREREQUISITES = PASS"
-    echo "DIRECT_P2P_READY = YES"
-    echo "All peer verification tests passed cleanly with 0 kernel errors."
+    if [[ $TEST_MOCK_ACTIVE -eq 1 ]]; then
+        echo "DIRECT_P2P_READY = TEST_ONLY"
+        echo "TEST_MODE = YES"
+        echo "Notice: Verified via injected test mocks only. Real hardware execution required for production confirmation."
+    else
+        echo "DIRECT_P2P_READY = YES"
+        echo "All peer verification tests passed cleanly with 0 kernel errors."
+    fi
 else
     echo "DIRECT_P2P_READY = INCONCLUSIVE"
 fi

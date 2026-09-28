@@ -21,7 +21,21 @@ echo "=== HIP IPC Memory Sharing Verification ==="
 # Set verified runtime environment variable
 export HSA_ENABLE_IPC_MODE_LEGACY=0
 
-IPC_BIN="${1:-}"
+IPC_BIN=""
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --binary)
+            IPC_BIN="${2:-}"
+            shift 2 || true
+            ;;
+        *)
+            if [[ -z "$IPC_BIN" ]]; then
+                IPC_BIN="$1"
+            fi
+            shift || true
+            ;;
+    esac
+done
 
 if [[ -z "$IPC_BIN" ]]; then
     for candidate in ./bin/hip_ipc_standalone /opt/rocm/bin/hip_ipc_standalone ./hip_ipc_standalone; do
@@ -33,9 +47,9 @@ if [[ -z "$IPC_BIN" ]]; then
 fi
 
 if [[ -z "$IPC_BIN" || ! -x "$IPC_BIN" ]]; then
-    echo "[SKIP] hip_ipc_standalone test binary not found."
-    echo "To build, compile an exec-based HIP IPC test using hipcc:"
-    echo "  hipcc -O3 -std=c++17 hip_ipc_standalone.cpp -o bin/hip_ipc_standalone"
+    echo "[SKIP] HIP IPC test binary not found (EXTERNAL_DEPENDENCY)."
+    echo "Notice: An external compiled HIP IPC test binary is required (e.g. from ROCm HIP test suite or samples)."
+    echo "Specify the path using: ./scripts/check-hip-ipc.sh --binary <path-to-binary>"
     exit 2
 fi
 
