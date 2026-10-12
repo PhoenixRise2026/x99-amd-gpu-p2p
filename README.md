@@ -8,11 +8,11 @@ English | [简体中文](README.zh-CN.md)
 
 ## Overview
 
-This repository provides verified patches, diagnostic scripts, architecture documentation, and empirical benchmarks enabling **direct hardware Peer-to-Peer (P2P) PCIe DMA transfers** between AMD GPUs across different PCIe Root Ports within the same Intel Broadwell-EP host-bridge / Root Complex domain.
+This repository records the Linux P2PDMA change, diagnostic tools, architecture evidence, and benchmark results for **direct GPU Peer-to-Peer (P2P) PCIe transfers** across Root Ports under an Intel Broadwell-EP host bridge. The v0.2.0 maintenance update distinguishes upstream status, the reference-hardware observations, and mechanisms that remain unproven.
 
-Historically, Linux kernel PCIe P2PDMA allowed Haswell-EP host bridges (`8086:2f00` / `8086:2f01`) to perform peer DMA across root ports, but the Broadwell-EP successor (`8086:6f00`) was omitted from the upstream whitelist. Consequently, multi-GPU AMD ROCm workloads (such as distributed LLM inference with SGLang / vLLM using RCCL) were marked `PCI_P2PDMA_MAP_NOT_SUPPORTED`, forcing inter-GPU communication to fall back to host shared memory staging (`via SHM/direct/direct`).
+On 2026-10-07, the Linux PCI maintainer reported the `8086:6f00` P2PDMA patch applied to the `pci/p2pdma` development tree for the v7.4 merge window. At the 2026-10-12 check, it was not yet present in Linus' current mainline tree or a released kernel. See [upstream status](docs/upstream-status.md); maintainer application is not a merge or release.
 
-By adding `8086:6f00` to the Linux P2PDMA whitelist and ensuring proper IOMMU translation, direct peer transfers achieve **~10.29 GB/s per direction** in TransferBench and **9.49 GB/s** in RCCL AllReduce with zero kernel AER/DMAR faults.
+The reference Ubuntu 6.8 system with the local whitelist patch, stock 44-bit AMDGPU mask, and VT-d Translated configuration recorded **~10.29 GB/s per direction** for TransferBench SDMA/Push and **~9.49 GB/s** RCCL Rank-2 AllReduce bus bandwidth. These are different metrics and workload layers. The BARs are above the reported 44-bit mask, but the repository does not capture the full DMA-BUF → IOMMU → GPUVM → PCIe request address chain. The successful test does not prove a particular IOVA mapping or a universal IOMMU requirement; see [high-address P2P investigation](docs/high-address-p2p-investigation.md).
 
 ---
 
@@ -23,13 +23,13 @@ All performance figures below are strictly locked to verifiable raw test evidenc
 | Benchmark | Stock Baseline | Direct P2P (This Repo) | Metric Description | Raw Evidence Source |
 | :--- | :--- | :--- | :--- | :--- |
 | **TransferBench P2P (SDMA/Push)** | Not included in public evidence | **10.29 GB/s** | Per-direction unidirectional bandwidth | `examples/broadwell-r9700/transferbench.txt` |
-| **RCCL Ring AllReduce (256–1024 MiB)**| Fallback to SHM | **9.49 GB/s** | Bus bandwidth ($B_{\text{bus}} = B_{\text{alg}}$) | `examples/broadwell-r9700/rccl.txt` |
-| **HIP IPC Cross-Process Sharing** | Not included in public evidence | **Direct DMA-BUF Map** | 1M, 16M, 64M bidirectional correctness | `examples/broadwell-r9700/hip-ipc.txt` |
+| **RCCL Ring AllReduce (256–1024 MiB)**| See SGLang A/B logs for SHM transport | **9.49 GB/s** | Rank-2 bus bandwidth; not one-way peer-copy rate | `examples/broadwell-r9700/rccl.txt` |
+| **HIP IPC Cross-Process Sharing** | Not included in public evidence | **Bidirectional content integrity** | 1 MiB, 16 MiB, 64 MiB cases | `examples/broadwell-r9700/hip-ipc.txt` |
 | **SGLang Qwen3.8 TP2 (C=1 Decode)** | 30.93 tok/s (via SHM) | **31.28 tok/s** (Direct P2P) | Single-request autoregressive decode | `results/x99-r9700-qwen38.md` |
 | **SGLang Qwen3.8 TP2 (C=4 Decode)** | 69.41 tok/s (via SHM) | **71.10 tok/s** (Direct P2P) | Concurrency 4 aggregate decode | `results/x99-r9700-qwen38.md` |
-| **Kernel Bus Stability** | 0 errors | **0 errors** | Zero AER errors, zero DMAR faults | `examples/broadwell-r9700/kernel-errors.txt` |
+| **Kernel Error Sample** | No paired baseline | **0 observed** | No AER/DMAR faults in the archived interval | `examples/broadwell-r9700/kernel-errors.txt` |
 
-*Reference Platform: Single Intel Xeon E5-2697A v4 (Broadwell-EP), 2x AMD Radeon AI PRO R9700 (RDNA4 gfx1201), ROCm 7.2.4, Ubuntu 24.04 / Kernel 6.8.*
+*Reference Platform: Single Intel Xeon E5-2697A v4 (Broadwell-EP), 2x AMD Radeon AI PRO R9700 (RDNA4 gfx1201), ROCm 7.2.4, Ubuntu 24.04 / patched Ubuntu 6.8. Prefill A/B results are mixed: +32.1% at 1K, −3.7% at 4K, +0.5% at 16K, and +25.5% at 32K medians; see [full ranges and trial counts](results/x99-r9700-qwen38.md).*
 
 ---
 
@@ -37,8 +37,8 @@ All performance figures below are strictly locked to verifiable raw test evidenc
 
 1. **Kernel DMA Mask & "dma44"**:
    The validated kernel **does not contain a custom 44-bit DMA patch**. AMDGPU natively uses its stock `DMA_BIT_MASK(44)`. The string `dma44` in historical local kernel build tags was retained solely as a build milestone identifier from an earlier experiment where an unstable 48-bit DMA hack was tested and reverted. No custom GMC driver modification is needed or used.
-2. **IOMMU Addressing & Causality (Reference System Scope)**:
-   On the validated reference system, translated VT-d was required because the peer BAR apertures were placed above the GPUs' stock 44-bit DMA-addressable physical range (46-bit MMIO addresses like `0x3808_...`). Under Translated mode (`intel_iommu=on`, `DMA-FQ`), the IOMMU dynamically remaps peer accesses into compact IOVAs, ensuring addresses remain within the 44-bit DMA mask. This is a characteristic of this reference system rather than an invariant requirement across all X99 motherboards. A system whose peer BAR resources are already physical addressable within the device DMA mask may have different requirements.
+2. **IOMMU Addressing & Causality**:
+   The reference captures show BAR0 above the reported stock 44-bit DMA mask and record successful P2P tests while VT-d was Translated. The artifacts do not trace the peer DMA-BUF mapping through the IOMMU, GPUVM, and actual GPU request address. Translated mode is the tested configuration; its exact role and requirements on other systems remain open. See [DMA evidence](docs/dma-addressing.md).
 3. **AITER & Runtime Backend**:
    AITER is not installed or active (`AITER_ACTIVE = NO`) in the validated SGLang v0.5.18 environment. The validated decode stack is mixed Triton/HIP (Full Attention: Triton; GDN/recurrent: Triton; Tree-Verify: Triton; AWQ M>1: Triton; AWQ M=1: native HIP GEMV). This describes the validated software stack only and should not be interpreted as a hardware support limitation for AITER on gfx1201.
 4. **PCIe Bridge Device String**:
@@ -61,7 +61,7 @@ x99-amd-gpu-p2p/
 ├── patches/
 │   ├── linux/
 │   │   ├── validated/      # Patch validated on Ubuntu 6.8.0-139
-│   │   └── upstream/       # Candidate patch prepared for Linux mainline git
+│   │   └── upstream/       # Maintainer-applied patch status and history
 │   └── rccl/               # Patch for ROCm 7.2.0 RCCL graph P2P override
 ├── docs/                   # Architecture, topology, and analysis docs
 │   ├── architecture.md     # Hardware & software architecture
@@ -72,7 +72,15 @@ x99-amd-gpu-p2p/
 │   ├── rccl.md             # RCCL topology detection and P2P tuning
 │   ├── troubleshooting.md  # Comprehensive diagnostic guide
 │   ├── version-matrix.md   # Complete software and hardware version matrix
-│   └── sglang-qwen38-case-study.md # Verified inference case study
+│   ├── sglang-qwen38-case-study.md # Verified inference case study
+│   ├── upstream-status.md  # Dated Linux PCI/P2PDMA status
+│   └── high-address-p2p-investigation.md # DMA44 evidence and open questions
+├── results/
+│   ├── x99-r9700-qwen38.md # Full SGLang A/B ranges
+│   └── evidence-manifest.json # Artifact hashes and evidence limits
+├── tests/                  # Offline fail-closed and evidence validation
+├── .github/workflows/      # Offline-only CI
+├── RELEASE_NOTES_v0.2.0.md # Draft; no tag or release created
 ├── scripts/                # Automated non-destructive inspection tools
 │   ├── diagnose.sh         # Fail-closed diagnostic tool
 │   ├── collect-topology.sh # Collects tree and device BDF topology
@@ -84,8 +92,6 @@ x99-amd-gpu-p2p/
 │   └── collect-errors.sh   # Inspects dmesg for AER, DMAR, or GPU resets
 ├── examples/               # Sanitized reference outputs from validated server
 │   └── broadwell-r9700/    # Reference logs from Intel Broadwell + 2x R9700
-├── results/                # Detailed benchmark logs and tables
-│   └── x99-r9700-qwen38.md # SGLang Qwen3.8-27B-AWQ TP2 benchmark results
 └── third_party/            # Upstream provenance and license tracking
 ```
 
@@ -122,14 +128,9 @@ This patch is validated specifically on `Ubuntu-6.8.0-139.139` (Kernel `6.8.12`,
 git apply patches/linux/validated/0001-pci-p2pdma-add-broadwell-6f00-host-bridge.patch
 ```
 
-### Upstream Linux Mainline Candidate
+### Linux upstream status
 
-A candidate patch prepared for upstream `torvalds/linux` master is provided as a unified diff at:
-`patches/linux/upstream/0001-broadwell-6f00-p2pdma-candidate.diff`.
-- Rebased on `torvalds/linux` master commit `72d3fcf802c45d00b300f25b848a93c3a2bd7c7e`.
-- Passed `checkpatch.pl --strict` (0 errors, 0 warnings).
-- Maintainers identified via `get_maintainer.pl`.
-- **Status**: Candidate patch prepared for future upstream submission. Functional validation must be performed on the reference Broadwell-EP `8086:6f00` host or an equivalent topology.
+The maintainer reported the patch applied to `pci/p2pdma` for v7.4. At the 2026-10-12 check it was not in current Linus mainline or a released kernel. The original Ubuntu 6.8 validated patch remains separately preserved. See [upstream status](docs/upstream-status.md) and [`patches/linux/upstream/`](patches/linux/upstream/README.md).
 
 ---
 
@@ -138,13 +139,12 @@ A candidate patch prepared for upstream `torvalds/linux` master is provided as a
 Direct P2P AllReduce requires clearing three distinct layers (validated on the reference Broadwell-EP + RCCL `2.27.7` / `rocm-7.2.0` testbed):
 
 1. **Platform Addressability (Reference System Scope)**:
-   - On the reference testbed, platform firmware placed GPU 64-bit BARs at physical 46-bit addresses; Intel VT-d operating in Translated mode (`DMA-FQ`) was required to remap transactions into compact IOVAs compatible with the GPUs' stock 44-bit DMA mask.
-   - Systems with physical BAR placement already within device DMA masks may not require translated IOMMU domains.
+   - The reference records high BAR placement, a stock 44-bit device DMA mask, and successful tests with Intel VT-d Translated. The complete address mapping path has not been captured; do not extrapolate the configuration to other systems.
 2. **Kernel Subsystem Gate**:
    - Intel Broadwell-EP `8086:6f00` must be present in the Linux kernel `pci_p2pdma_whitelist[]` (`drivers/pci/p2pdma.c`) with `REQ_SAME_HOST_BRIDGE`.
 3. **RCCL User-Space Graph Gate**:
-   - In stock RCCL 2.27.7, hardcoded Intel x86 platform heuristics unconditionally demoted `p2pLevel` to `PATH_PXB`, ignoring user environment variables.
-   - The included RCCL patch (`patches/rccl/0001-graph-honor-explicit-p2p-level-after-platform-limit.patch`) ensures that setting `NCCL_P2P_LEVEL=PHB` successfully grants P2P eligibility for Root Port traversal:
+   - The local compatibility patch targets RCCL 2.27.7 / `rocm-7.2.0` source. The exact development and release status was checked separately; see [RCCL version notes](docs/rccl.md).
+   - For a build that requires the patch, verify that `NCCL_P2P_LEVEL=PHB` and the logs show direct P2P markers:
    ```bash
    export NCCL_P2P_LEVEL=PHB
    export NCCL_DEBUG=INFO
@@ -162,6 +162,10 @@ Direct P2P AllReduce requires clearing three distinct layers (validated on the r
 - [RCCL Collective Acceleration](docs/rccl.md)
 - [Diagnostic & Troubleshooting Guide](docs/troubleshooting.md)
 - [Version & Provenance Matrix](docs/version-matrix.md)
+- [Linux Upstream Status](docs/upstream-status.md)
+- [High-address P2P Investigation](docs/high-address-p2p-investigation.md)
+- [Evidence Manifest](results/evidence-manifest.json)
+- [v0.2.0 Release Notes Draft](RELEASE_NOTES_v0.2.0.md)
 - [SGLang Qwen3.8-27B Inference Case Study](docs/sglang-qwen38-case-study.md)
 
 ---

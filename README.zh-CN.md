@@ -8,11 +8,11 @@
 
 ## 概述
 
-本项目提供经过验证的内核补丁、诊断脚本、架构文档与实测基准测试，用于在同一 Intel Broadwell-EP host-bridge / Root Complex 域内跨不同 PCIe Root Port 的 AMD GPU 之间启用**直接硬件点对点 (P2P) PCIe DMA 传输**。
+本项目记录了 Linux P2PDMA 变更、诊断工具、架构证据和基准结果，用于说明同一 Intel Broadwell-EP 主机桥下、跨 Root Port 的 AMD GPU **点对点 (P2P) PCIe 传输**。v0.2.0 维护更新将上游状态、参考硬件实测和仍未证明的机制分别说明。
 
-历史上，Linux 内核 PCIe P2PDMA 允许 Haswell-EP 主机桥（`8086:2f00` / `8086:2f01`）跨 Root Port 执行 peer DMA，但其继任者 Broadwell-EP（`8086:6f00`）被上游白名单遗漏。因此，多 GPU AMD ROCm 工作负载（例如使用 RCCL 的 SGLang / vLLM 分布式 LLM 推理）被标记为 `PCI_P2PDMA_MAP_NOT_SUPPORTED`，迫使跨 GPU 通信回退到主机共享内存中转（`via SHM/direct/direct`）。
+2026-10-07，Linux PCI 维护者表示 `8086:6f00` P2PDMA 补丁已应用到 `pci/p2pdma` 开发树，目标为 v7.4 合并窗口。截至 2026-10-12 的核查，它尚未出现在 Linus 当前主线或任何已发布内核中。详见[上游状态](docs/upstream-status.md)；维护者应用不等于合并或发布。
 
-通过将 `8086:6f00` 添加至 Linux P2PDMA 白名单并确保正确的 IOMMU 地址转换，直接点对点传输在 TransferBench 中实现了**单向约 10.29 GB/s** 的带宽，在 RCCL AllReduce 中实现了 **9.49 GB/s** 的总线带宽，且系统内核零 AER/DMAR 故障。
+参考 Ubuntu 6.8 系统使用本地白名单补丁、原生 44-bit AMDGPU DMA 掩码和 VT-d Translated 配置，TransferBench SDMA/Push 记录了**每个方向约 10.29 GB/s**，RCCL Rank-2 AllReduce 记录约 **9.49 GB/s 总线带宽**。二者是不同工作负载和指标。BAR 地址高于报告的 44-bit 掩码，但仓库没有捕获完整 DMA-BUF → IOMMU → GPUVM → PCIe 请求地址链路。实测成功并不能证明某个具体 IOVA 映射，也不能证明所有系统都必须使用 IOMMU 转换模式；见[高地址 P2P 调查](docs/high-address-p2p-investigation.md)。
 
 ---
 
@@ -23,13 +23,13 @@
 | 基准测试 | 原生基准 (Stock Baseline) | 直接 P2P (本项目) | 指标说明 | 原始证据来源 |
 | :--- | :--- | :--- | :--- | :--- |
 | **TransferBench P2P (SDMA/Push)** | 公开证据中未包含 | **10.29 GB/s** | 单向传输带宽 | `examples/broadwell-r9700/transferbench.txt` |
-| **RCCL Ring AllReduce (256–1024 MiB)** | 回退至 SHM | **9.49 GB/s** | 总线带宽 ($B_{\text{bus}} = B_{\text{alg}}$) | `examples/broadwell-r9700/rccl.txt` |
-| **HIP IPC 跨进程共享** | 公开证据中未包含 | **Direct DMA-BUF Map** | 1M、16M、64M 双向正确性验证 | `examples/broadwell-r9700/hip-ipc.txt` |
+| **RCCL Ring AllReduce (256–1024 MiB)** | SGLang A/B 日志记录 SHM transport | **9.49 GB/s** | Rank-2 总线带宽，不是单向 peer-copy 速率 | `examples/broadwell-r9700/rccl.txt` |
+| **HIP IPC 跨进程共享** | 公开证据中未包含 | **双向数据完整性** | 1 MiB、16 MiB、64 MiB 案例 | `examples/broadwell-r9700/hip-ipc.txt` |
 | **SGLang Qwen3.8 TP2 (C=1 解码)** | 30.93 tok/s (via SHM) | **31.28 tok/s** (Direct P2P) | 单请求自回归解码吞吐 | `results/x99-r9700-qwen38.md` |
 | **SGLang Qwen3.8 TP2 (C=4 解码)** | 69.41 tok/s (via SHM) | **71.10 tok/s** (Direct P2P) | 并发 4 聚合解码吞吐 | `results/x99-r9700-qwen38.md` |
-| **内核总线稳定性** | 0 次错误 | **0 次错误** | 零 AER 错误，零 DMAR 故障 | `examples/broadwell-r9700/kernel-errors.txt` |
+| **内核错误样本** | 无配对基线 | **观察到 0 次** | 存档时间段内没有 AER/DMAR 故障 | `examples/broadwell-r9700/kernel-errors.txt` |
 
-*参考平台：单路 Intel Xeon E5-2697A v4 (Broadwell-EP)，2x AMD Radeon AI PRO R9700 (RDNA4 gfx1201)，ROCm 7.2.4，Ubuntu 24.04 / Kernel 6.8。*
+*参考平台：单路 Intel Xeon E5-2697A v4 (Broadwell-EP)，2x AMD Radeon AI PRO R9700 (RDNA4 gfx1201)，ROCm 7.2.4，Ubuntu 24.04 / patched Ubuntu 6.8。Prefill A/B 结果并不一致：1K 中位数 +32.1%、4K −3.7%、16K +0.5%、32K +25.5%；试验次数和完整区间见[结果表](results/x99-r9700-qwen38.md)。*
 
 ---
 
@@ -37,8 +37,8 @@
 
 1. **内核 DMA 掩码与 "dma44"**：
    经过验证的内核**不包含任何自定义 44-bit DMA 补丁**。AMDGPU 原生使用其默认的 `DMA_BIT_MASK(44)`。历史上本地内核构建标签中的 `dma44` 字符串仅作为一个构建里程碑标识符保留，源自更早之前测试并回滚的不稳定 48-bit DMA 修改实验。不需要也不存在任何自定义 GMC 驱动修改。
-2. **IOMMU 寻址与因果关系（仅限参考系统范围）**：
-   在经过验证的参考系统上，需要启用转换模式（Translated）VT-d 是因为该平台的对端 BAR 物理窗口被映射到了超出 GPU 原生 44-bit DMA 寻址物理范围的地址（例如 `0x3808_...` 这样的 46-bit MMIO 地址）。在转换模式（`intel_iommu=on`, `DMA-FQ`）下，IOMMU 会将对端访问动态重映射为紧凑的 IOVA，确保地址落在 44-bit DMA 掩码之内。这是该参考系统平台的物理布局特征，而非所有 X99 主板的普遍不变要求。若对端 BAR 资源物理映射已位于设备 DMA 掩码寻址范围内，其需求可能不同。
+2. **IOMMU 寻址与因果关系**：
+   参考采集显示 BAR0 地址高于报告的原生 44-bit DMA 掩码，并记录了 VT-d Translated 配置下的成功测试。现有材料没有跟踪对端 DMA-BUF 映射经过 IOMMU、GPUVM 到 GPU 实际请求地址的完整链路。Translated 是已测试配置；它的具体作用以及其他系统的要求仍未确定。详见[DMA 证据说明](docs/dma-addressing.md)。
 3. **AITER 与运行时后端**：
    在经过验证的 SGLang v0.5.18 环境中，未安装也未激活 AITER（`AITER_ACTIVE = NO`）。经验证的解码栈为 Triton/HIP 混合实现（Full Attention：Triton；GDN/recurrent：Triton；Tree-Verify：Triton；AWQ M>1：Triton；AWQ M=1：原生 HIP GEMV）。这仅描述经过验证的软件技术栈，不应解读为 gfx1201 硬件不支持 AITER。
 4. **PCIe 桥设备标识字符串**：
@@ -62,7 +62,7 @@ x99-amd-gpu-p2p/
 ├── patches/
 │   ├── linux/
 │   │   ├── validated/      # 经 Ubuntu 6.8.0-139 验证的内核补丁
-│   │   └── upstream/       # 面向 Linux mainline git 准备的候选补丁
+│   │   └── upstream/       # 维护者已应用状态与历史材料
 │   └── rccl/               # ROCm 7.2.0 RCCL 拓扑图 P2P 覆写补丁
 ├── docs/                   # 架构、拓扑与深入分析文档
 │   ├── architecture.md     # 软硬件架构设计
@@ -73,7 +73,15 @@ x99-amd-gpu-p2p/
 │   ├── rccl.md             # RCCL 拓扑探测与 P2P 调优
 │   ├── troubleshooting.md  # 综合故障排查与诊断指南
 │   ├── version-matrix.md   # 完整软硬件版本与来源矩阵
-│   └── sglang-qwen38-case-study.md # 实测推理案例研究
+│   ├── sglang-qwen38-case-study.md # 实测推理案例研究
+│   ├── upstream-status.md  # Linux PCI/P2PDMA 日期状态
+│   └── high-address-p2p-investigation.md # DMA44 证据和未决问题
+├── results/
+│   ├── x99-r9700-qwen38.md # SGLang A/B 完整区间
+│   └── evidence-manifest.json # 工件哈希与证据边界
+├── tests/                  # 离线 fail-closed 与证据验证
+├── .github/workflows/      # 仅运行离线检查的 CI
+├── RELEASE_NOTES_v0.2.0.md # 草稿；未创建 tag 或 Release
 ├── scripts/                # 自动化非破坏性检测脚本
 │   ├── diagnose.sh         # Fail-closed 自动化诊断工具
 │   ├── collect-topology.sh # 收集 PCIe 树与设备 BDF 拓扑
@@ -85,8 +93,6 @@ x99-amd-gpu-p2p/
 │   └── collect-errors.sh   # 检查 dmesg 中的 AER、DMAR 与 GPU 重置错误
 ├── examples/               # 验证服务器上的脱敏参考输出
 │   └── broadwell-r9700/    # Intel Broadwell + 2x R9700 参考日志
-├── results/                # 详细基准测试日志与数据表
-│   └── x99-r9700-qwen38.md # SGLang Qwen3.8-27B-AWQ TP2 基准测试结果
 └── third_party/            # 上游来源与许可证追踪
 ```
 
@@ -123,14 +129,9 @@ DIRECT_P2P_READY = INCONCLUSIVE
 git apply patches/linux/validated/0001-pci-p2pdma-add-broadwell-6f00-host-bridge.patch
 ```
 
-### 上游 Linux 主线候选补丁
+### Linux 上游状态
 
-面向上游 `torvalds/linux` master 准备的候选补丁以 unified diff 形式提供于：
-`patches/linux/upstream/0001-broadwell-6f00-p2pdma-candidate.diff`。
-- 基于 `torvalds/linux` master 提交 `72d3fcf802c45d00b300f25b848a93c3a2bd7c7e` rebase。
-- 通过 `checkpatch.pl --strict` 检查（0 错误，0 警告）。
-- 已通过 `get_maintainer.pl` 确定相应 maintainer。
-- **状态**：面向后续上游提交准备的候选补丁。必须在 Broadwell-EP `8086:6f00` 参考主机或等效拓扑上执行功能验证。
+维护者表示补丁已应用到 `pci/p2pdma`，目标为 v7.4。截至 2026-10-12，尚未进入 Linus 当前主线或已发布内核。原 Ubuntu 6.8 验证补丁仍单独保留。详见[上游状态](docs/upstream-status.md)和[`patches/linux/upstream/`](patches/linux/upstream/README.md)。
 
 ---
 
@@ -139,13 +140,12 @@ git apply patches/linux/validated/0001-pci-p2pdma-add-broadwell-6f00-host-bridge
 直接 P2P AllReduce 需要依次通过三个不同层级的关卡（在参考 Broadwell-EP + RCCL `2.27.7` / `rocm-7.2.0` 测试平台上验证）：
 
 1. **平台寻址能力（参考系统范围）**：
-   - 在参考测试平台上，系统固件将 GPU 64-bit BAR 分配在物理 46-bit 地址空间；必须启用处于转换模式（`DMA-FQ`）的 Intel VT-d，将事务重映射为与 GPU 原生 44-bit DMA 掩码兼容的紧凑 IOVA。
-   - 物理 BAR 分配已在设备 DMA 掩码范围内的系统，可能无需转换模式 IOMMU 域。
+   - 参考采集记录了高地址 BAR、原生 44-bit 设备 DMA 掩码和 VT-d Translated 配置下的成功测试。完整地址映射链尚未捕获；不要将此配置要求外推到其他系统。
 2. **内核子系统关卡**：
    - Linux 内核 `pci_p2pdma_whitelist[]`（`drivers/pci/p2pdma.c`）中必须包含 Intel Broadwell-EP `8086:6f00`，并带有 `REQ_SAME_HOST_BRIDGE` 标志。
 3. **RCCL 用户态拓扑图关卡**：
-   - 在原生 RCCL 2.27.7 中，硬编码的 Intel x86 平台启发式规则会无条件将 `p2pLevel` 降级为 `PATH_PXB`，忽略用户环境变量。
-   - 本项目附带的 RCCL 补丁（`patches/rccl/0001-graph-honor-explicit-p2p-level-after-platform-limit.patch`）确保设置 `NCCL_P2P_LEVEL=PHB` 时能够成功授予跨 Root Port 传输的 P2P 资格：
+   - 本地兼容性补丁针对 RCCL 2.27.7 / `rocm-7.2.0` 源码；develop 和正式版本状态已单独复核，见[RCCL 兼容说明](docs/rccl.md)。
+   - 对需要此补丁的构建，可设置 `NCCL_P2P_LEVEL=PHB` 并确认日志中的直接 P2P 标志：
    ```bash
    export NCCL_P2P_LEVEL=PHB
    export NCCL_DEBUG=INFO
@@ -163,6 +163,10 @@ git apply patches/linux/validated/0001-pci-p2pdma-add-broadwell-6f00-host-bridge
 - [RCCL 集合通信加速调优](docs/rccl.md)
 - [综合故障排查与诊断指南](docs/troubleshooting.md)
 - [完整软硬件版本与来源矩阵](docs/version-matrix.md)
+- [Linux 上游状态](docs/upstream-status.md)
+- [高地址 P2P 调查](docs/high-address-p2p-investigation.md)
+- [证据清单](results/evidence-manifest.json)
+- [v0.2.0 Release Notes 草稿](RELEASE_NOTES_v0.2.0.md)
 - [SGLang Qwen3.8-27B 实测推理案例研究](docs/sglang-qwen38-case-study.md)
 
 ---

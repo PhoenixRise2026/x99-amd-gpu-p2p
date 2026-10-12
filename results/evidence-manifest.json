@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "last_reviewed": "2026-10-12",
+  "reference_configuration": {
+    "host_cpu": "Intel Xeon E5-2697A v4, single socket",
+    "host_bridge": "Intel 8086:6f00",
+    "gpus": [
+      "AMD Radeon AI PRO R9700 at 0000:05:00.0",
+      "AMD Radeon AI PRO R9700 at 0000:08:00.0"
+    ],
+    "kernel": "Ubuntu 6.8.0-139 base, local Broadwell 8086:6f00 P2PDMA whitelist patch",
+    "amdgpu_dma_mask": "stock 44-bit",
+    "iommu": "Intel VT-d Translated (DMA-FQ), as recorded for tested runs; peer IOVA mapping chain is open",
+    "driver": "ROCK DKMS 6.16.13",
+    "rocm": "7.2.4",
+    "rccl": "2.27.7 source baseline with local PHB override patch for direct-P2P condition",
+    "sglang": "v0.5.18; Qwen3.8-27B-AWQ; TP=2"
+  },
+  "artifacts": [
+    {
+      "path": "examples/broadwell-r9700/lspci.txt",
+      "sha256": "3ba469b2b1b3c06f98c5fe495d8b39d1b856b4463f936dfd7c8cc8658d63d061",
+      "source_capture_sha256": "3f4cfe8ebc472013a88274a2e9c4f12b978b462dbf784e46fbb4cf96d60683d5",
+      "captured_at": "2026-09-27",
+      "evidence_level": "FACT",
+      "test_conditions": "Sanitized lspci capture from the single-socket E5-2697A v4 reference host; two R9700 devices installed.",
+      "summary": "Sanitized PCI enumeration: device IDs, BAR resource addresses and sizes.",
+      "limitations": "Resource enumeration does not identify the address used in a GPU peer DMA request."
+    },
+    {
+      "path": "examples/broadwell-r9700/topology.txt",
+      "sha256": "15799e35b8777260d22a050285f7272ade0835feb275c99904773a613a0be4e6",
+      "source_capture_sha256": "6f51e252939a2f23daf8aa8adc203f2f8b1c91ab6e2c92f4cf9e65629291b766",
+      "captured_at": "2026-09-27",
+      "evidence_level": "FACT",
+      "test_conditions": "Sanitized PCI sysfs/topology capture from the same reference host and device layout.",
+      "summary": "Sanitized PCI ancestry and Root Port relationships for the reference host.",
+      "limitations": "Applies to the captured host topology only."
+    },
+    {
+      "path": "examples/broadwell-r9700/hip-ipc.txt",
+      "sha256": "bc08b7c7f087c4ffacdae8d2529883f844ed9876ba163a49a57311603f7b7d2c",
+      "source_capture_sha256": "a0f28e2170b691a56ea764a8c385802117fc0be31952a1ba8e5f2cf2c35b8098",
+      "captured_at": "2026-09-15T00:04:00Z",
+      "evidence_level": "OBSERVED",
+      "test_conditions": "Cross-process HIP IPC; 1, 16, and 64 MiB tiers; exporter/importer direction tested both ways.",
+      "summary": "Six HIP IPC content-integrity cases recorded across both GPU directions and 1, 16, and 64 MiB sizes.",
+      "limitations": "External test binary/source is not included; output does not trace DMA-BUF, IOMMU, GPUVM, or PCIe request addresses."
+    },
+    {
+      "path": "examples/broadwell-r9700/transferbench.txt",
+      "sha256": "4f2750630b0bc1fe428b2405e6a6521e01f4dce85f232041c01cb4aa0198d18f",
+      "source_capture_sha256": "f9dd433a1e9cfa4d4bbdfb027ca5e4fc76e10745585ee581b7e42d7be877f6b5",
+      "captured_at": "2026-09-17T01:40:56Z",
+      "evidence_level": "OBSERVED",
+      "test_conditions": "Reference dual-GPU TransferBench capture; directional SDMA, GFX Push, and GFX Pull measurements.",
+      "summary": "SDMA and GFX Push about 10.29 GB/s per direction; GFX Pull about 3.14 GB/s GPU0 to GPU1.",
+      "limitations": "Reverse-direction GFX Pull result is absent; no bottleneck cause is established."
+    },
+    {
+      "path": "examples/broadwell-r9700/rccl.txt",
+      "sha256": "1590315f4be663d444b2cbf97a0f491ee526f6f61d4555c06a40ccc3d14c59ed",
+      "source_capture_sha256": "3a04c538cb3ef9081e7d819c99182314757c320d306b3a985ddbc0cb4cb94f0e",
+      "captured_at": "2026-09-15T00:15:00Z",
+      "evidence_level": "OBSERVED",
+      "test_conditions": "RCCL Rank-2 Ring AllReduce; 1–1024 MiB; NCCL_P2P_LEVEL=PHB; patched RCCL library; test log records direct transport markers.",
+      "summary": "RCCL reports isAllDirectP2p 1 and via P2P/IPC; Rank-2 AllReduce reaches about 9.49 GB/s bus bandwidth.",
+      "limitations": "Bus bandwidth is a collective metric, not a one-direction peer-copy rate. Error-free status is limited to the capture interval."
+    },
+    {
+      "path": "examples/broadwell-r9700/kernel-errors.txt",
+      "sha256": "abcc4ad9639c2bbf58787405dd60617cf9e58404429a968c73934e63a2ca0da0",
+      "source_capture_sha256": "75bb5f91572c6797b5e408ec2d17462c90c74ceca135c3c0efcfd137df122d2f",
+      "captured_at": "2026-09-14T23:49:00Z",
+      "evidence_level": "OBSERVED",
+      "test_conditions": "Sanitized kernel journal/error collection associated with the reference test interval.",
+      "summary": "Sanitized kernel health log records zero AER and DMAR faults in the sampled interval.",
+      "limitations": "A bounded observation, not a guarantee for other intervals or workloads."
+    },
+    {
+      "path": "examples/broadwell-r9700/real_llm_tp2_stock_vs_p2p_ab_results.json",
+      "sha256": "469a4cf2ce838658ec535eaf0a5005f9c3755d3f7c10ea1b2f23e312b9ed8e19",
+      "source_capture_sha256": null,
+      "captured_at": "2026-09-17",
+      "evidence_level": "OBSERVED",
+      "test_conditions": "SGLang v0.5.18 TP=2 Qwen3.8-27B-AWQ; stock RCCL/SHM compared with patched RCCL/direct P2P; five runs per prefill tier/mode and three concurrency batches per mode.",
+      "summary": "Stock-RCCL/SHM vs patched-RCCL/direct-P2P SGLang TP=2 raw A/B runs, including 1K, 4K, 16K and 32K prefill plus decode and concurrency.",
+      "limitations": "Five runs per mode and prefill tier; three batches per mode and concurrency tier. RCCL build/configuration and transport change together, so the comparison does not isolate P2P as the sole cause."
+    }
+  ],
+  "address_mapping_chain": {
+    "status": "OPEN",
+    "missing_stages": [
+      "DMA-BUF export/import and importer attach for a traced peer buffer",
+      "dma_map_resource input and returned IOVA for that resource",
+      "IOMMU mapping tied to the imported peer buffer",
+      "GPUVM PTE for the peer buffer",
+      "GPU-emitted PCIe request address during the captured transfer"
+    ],
+    "private_non_reproducible_iova_notes": [
+      "0xfe200000",
+      "0x8e000000",
+      "0xfe000000",
+      "0x8d000000"
+    ],
+    "private_trace_status": "Values were quoted in internal notes; raw eBPF capture, collection procedure, and matching kernel/source provenance are not included. They are not public proof of the end-to-end mapping chain."
+  }
+}
