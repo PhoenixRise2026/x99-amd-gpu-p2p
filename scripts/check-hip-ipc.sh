@@ -4,7 +4,8 @@
 #
 # Provenance & Execution Notes:
 #   This script executes an external standalone HIP IPC test binary (EXTERNAL_DEPENDENCY).
-#   The validation test binary is not distributed in v0.1; specify via --binary <path-to-binary>.
+#   The validation test binary is an external dependency. A zero exit status alone is not a pass:
+#   output must show verified reads and writes for both GPU 0 -> GPU 1 and GPU 1 -> GPU 0.
 #
 # Validated Environment Setting:
 #   export HSA_ENABLE_IPC_MODE_LEGACY=0
@@ -51,10 +52,26 @@ if [[ -z "$IPC_BIN" || ! -x "$IPC_BIN" ]]; then
 fi
 
 echo "Running HIP IPC validation using: $IPC_BIN"
-if "$IPC_BIN"; then
-    echo "[PASS] HIP IPC Verification Complete (0 errors)."
-    exit 0
-else
+set +e
+IPC_OUT=$("$IPC_BIN" 2>&1)
+IPC_RET=$?
+set -e
+printf '%s\n' "$IPC_OUT"
+
+if [[ $IPC_RET -ne 0 ]]; then
     echo "[FAIL] HIP IPC Verification encountered errors."
     exit 1
 fi
+
+IPC_EVIDENCE=$(printf '%s\n' "$IPC_OUT" | awk -f "$(dirname "${BASH_SOURCE[0]}")/lib/hip-ipc-parser.awk")
+if [[ "$IPC_EVIDENCE" == "PASS" ]]; then
+    echo "[PASS] HIP IPC showed verified forward reads and reverse writes in both GPU directions."
+    exit 0
+fi
+if [[ "$IPC_EVIDENCE" == "FAIL" ]]; then
+    echo "[FAIL] At least one reported HIP IPC integrity case failed."
+    exit 1
+fi
+
+echo "[INCONCLUSIVE] Binary exited 0 but did not print complete bidirectional integrity evidence."
+exit 3
