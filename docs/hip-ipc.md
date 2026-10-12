@@ -14,13 +14,11 @@ For direct peer memory operations to function without routing through host RAM b
 
 ---
 
-## DMA-BUF and Linux P2PDMA
+## DMA-BUF and Linux P2PDMA boundary
 
-Under modern ROCm (ROCm 6.x and 7.x):
-- The AMD KFD (Kernel Fusion Driver) and AMDGPU kernel driver use Linux DMA-BUF export/import mechanisms backed by the kernel's PCIe P2PDMA subsystem (`drivers/pci/p2pdma.c`).
-- When a memory handle is exported and imported across processes on different GPUs, AMDGPU attaches the DMA-BUF to the target device.
-- If the PCIe path between the two devices is permitted by the kernel (`pci_p2pdma_distance_many()` returns a valid distance $\ge 0$ and the mapping mode evaluates to `PCI_P2PDMA_MAP_THRU_HOST_BRIDGE` or `PCI_P2PDMA_MAP_BUS_ADDR`), the BAR memory is mapped directly into the peer GPU's virtual address space (via GPU VM page tables).
-- If the host bridge is not whitelisted, the mapping type evaluates to `PCI_P2PDMA_MAP_NOT_SUPPORTED` and the kernel rejects direct P2P mapping, forcing the runtime to fall back to host memory copies (HIP staging buffers or socket/IPC pipes).
+The Linux P2PDMA whitelist is one kernel topology/mapping gate in the tested setup. The exact KFD, AMDGPU, DMA-BUF, DMA API, and GPUVM path depends on the kernel and ROCm source revisions. The public artifacts in this repository do not trace a single imported peer buffer through DMA-BUF attach, `dma_map_resource()`, the IOMMU output, the GPUVM PTE, and the GPU's PCIe request. Do not infer that complete path from a successful HIP IPC check or the whitelist entry alone.
+
+The archived HIP IPC output verifies content read/write patterns across the two process/device directions. It is evidence of successful application-level peer sharing in that tested configuration; it does not by itself identify every lower-level mapping or prove a general fallback behavior when the kernel prerequisite is absent. See [high-address P2P investigation](high-address-p2p-investigation.md).
 
 ---
 
@@ -78,6 +76,6 @@ Summary:
 
 ## Technical Implications
 
-- **No Host Bounce Buffers**: Once mapped, memory reads and writes from GPU 1 directly access the BAR space of GPU 0 over the PCIe bus.
-- **Hardware Coherence & Root Complex Handling**: Intel Broadwell-EP host bridge (`8086:6f00`) routes the read/write TLPs between Root Port `0000:00:02.0` and Root Port `0000:00:03.0` entirely within the PCIe controller ring, bypassing system DRAM and CPU execution cores.
-- **Zero Kernel Errors**: Validated dmesg confirms 0 PCIe AER (Advanced Error Reporting) errors and 0 DMAR (DMA Remapping) faults during continuous IPC transfers.
+- **Transport inference**: The HIP IPC integrity log shows cross-process sharing succeeded. RCCL separately reports `via P2P/IPC` for its direct run. Neither log is a PCIe TLP trace, so avoid claims about every transaction bypassing host memory unless supported by lower-level instrumentation.
+- **Root-complex topology**: PCI enumeration places the GPUs under different Root Ports of the same `8086:6f00` host-bridge domain. The exact internal routing/coherence behavior is not measured by the included logs.
+- **Bounded kernel-error sample**: The archived log reports zero AER/DMAR faults for its sampled interval. It does not establish an error-free guarantee for arbitrary duration or other workloads.

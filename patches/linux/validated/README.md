@@ -1,11 +1,11 @@
 # Validated Linux Kernel Patch
 
 ## Overview
-This directory contains the exact patch that was applied, built, and thoroughly validated on the reference hardware testbed.
+This directory contains the exact patch used for the archived reference-hardware tests.
 
 > [!IMPORTANT]
-> **This is the patch that was validated on the reference system.**
-> It is based on Ubuntu 24.04 LTS kernel source and is separate from the upstream Linux candidate patch.
+> **This is the patch used for the archived reference-system tests.**
+> It is based on Ubuntu 24.04 LTS kernel source and is separate from the upstream patch artifact.
 
 ## Metadata
 * **Base Repository**: `https://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/noble`
@@ -22,15 +22,15 @@ This directory contains the exact patch that was applied, built, and thoroughly 
   * TransferBench SDMA / GFX Push: ~10.29 GB/s per-direction unidirectional peer throughput
   * RCCL AllReduce: ~9.49 GB/s bus bandwidth (large size sweep 1M-1024M)
   * HIP IPC: 100% data verification across 1M, 16M, and 64M transfers
-  * Error Counters: 0 DMAR faults, 0 PCIe AER errors, 0 GPU resets, 0 ring timeouts
+  * Archived error sample: 0 DMAR faults, 0 PCIe AER errors, 0 GPU resets, 0 ring timeouts in the reported interval
 
 ## What This Patch Changes
 It adds a single table entry into `pci_p2pdma_whitelist[]`:
 ```c
 {PCI_VENDOR_ID_INTEL, 0x6f00, REQ_SAME_HOST_BRIDGE},
 ```
-This informs the Linux PCI core subsystem that device `8086:6f00` (Intel Xeon E7 v4 / E5 v4 Host Bridge) can safely route peer-to-peer DMA between root ports under the same host bridge.
+This marks `8086:6f00` as eligible for the Linux through-host-bridge P2PDMA map path when the kernel's same-host-bridge condition is met. The entry is a topology whitelist assertion; it does not prove the DMA address-translation chain.
 
 ## Known Limitations
 * **Single Host Bridge Only**: Transactions are restricted to endpoints under the same host bridge (`REQ_SAME_HOST_BRIDGE`). P2P across multiple CPU sockets (QPI traversal) is NOT whitelisted.
-* **Driver Mask Requirements**: Requires either an IOMMU in Translated mode (`DMA-FQ`) or physical BAR placement within the device's DMA mask range.
+* **Address-translation boundary**: The recorded test used Intel VT-d Translated mode with the stock 44-bit AMDGPU mask. The public artifacts do not trace the complete peer BAR → DMA-BUF/DMA API → IOMMU → GPUVM → PCIe request path, so they do not establish a general IOMMU requirement or prove the IOVA used for every transfer. See [the investigation](../../../docs/high-address-p2p-investigation.md).

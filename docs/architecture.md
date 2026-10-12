@@ -1,58 +1,26 @@
 # Architecture Overview: Dual AMD R9700 P2P on Intel Broadwell-EP / X99
 
-## High-Level System Architecture
+## Observed reference topology
 
 ```text
-+-------------------------------------------------------------------------+
-|                  Intel Xeon E5-2697A v4 (Broadwell-EP)                  |
-|                        Single-Socket, 16C / 32T                         |
-|                                                                         |
-|  +-------------------------------------------------------------------+  |
-|  |           PCIe Host Bridge / Root Complex Domain [8086:6f00]       |  |
-|  |           (Kernel P2PDMA Whitelist: REQ_SAME_HOST_BRIDGE)         |  |
-|  +---------------------------------+---------------------------------+  |
-|                                    |                                    |
-|             Root Port 2            |             Root Port 3            |
-|             [8086:6f04]            |             [8086:6f08]            |
-|          PCIe 3.0 x16 Link         |          PCIe 3.0 x16 Link         |
-+------------------------------------+------------------------------------+
-                                     |
-                                     v
-                    +----------------------------------+
-                    | Direct Cross-Root-Port P2P Path  |
-                    | ~10.29 GB/s SDMA (Per-Direction) |
-                    +----------------------------------+
-                                     |
-                  +------------------+------------------+
-                  |                                     |
-                  v                                     v
-    +---------------------------+         +---------------------------+
-    |    AMD PCIe Bridge Func   |         |    AMD PCIe Bridge Func   |
-    |        [1002:1478]        |         |        [1002:1478]        |
-    |        [1002:1479]        |         |        [1002:1479]        |
-    +-------------+-------------+         +-------------+-------------+
-                  |                                     |
-                  v                                     v
-    +---------------------------+         +---------------------------+
-    |   AMD Radeon AI PRO R9700 |         |   AMD Radeon AI PRO R9700 |
-    |        (0000:05:00.0)     |         |        (0000:08:00.0)     |
-    |     32 GiB GDDR6 ReBAR    |         |     32 GiB GDDR6 ReBAR    |
-    |   Physical: 0x380800000000|         |   Physical: 0x381000000000|
-    |   IOVA:     0x00008e000000|         |   IOVA:     0x00008d000000|
-    +---------------------------+         +---------------------------+
+Intel Xeon E5-2697A v4 / Broadwell-EP
+Host bridge: 8086:6f00
+  ├─ Root Port 0000:00:02.0
+  │    └─ AMD bridge functions → R9700 GPU 0, 0000:05:00.0
+  │         BAR0: 0x380800000000–0x380fffffffff (32 GiB)
+  └─ Root Port 0000:00:03.0
+       └─ AMD bridge functions → R9700 GPU 1, 0000:08:00.0
+            BAR0: 0x381000000000–0x3817ffffffff (32 GiB)
 ```
 
-## Architectural Building Blocks
+The sanitized PCI capture records the device IDs and resource ranges above. The two GPUs report a stock 44-bit DMA mask in the captured sysfs data. The reference workload used Ubuntu 6.8 with the repository's `8086:6f00` P2PDMA whitelist patch and VT-d Translated mode.
 
-1. **Host Interconnect (Intel Broadwell-EP Ring Bus)**:
-   - On the single-socket Xeon E5-2697A v4, PCIe lanes for both full-bandwidth x16 slots are routed directly to Root Ports 2 and 3 on the CPU uncore.
-   - P2P memory traffic traverses the internal CPU switch ring without staging in host DDR4 RAM.
-2. **IOMMU Address Translation (Intel VT-d Translated)**:
-   - The system operates with VT-d enabled in Translated mode (`DMA-FQ`).
-   - Peer memory requests are remapped via `dma_map_resource()` into compact IOVA space (< 4 GiB), ensuring that physical 46-bit BAR addresses are accessible within the stock 44-bit DMA mask of AMDGPU. *(Observed during private validation; raw trace not distributed in v0.1. Note that Translated mode was required on this specific reference testbed due to 64-bit BAR placement; requirements on other X99 systems depend on motherboard BAR mapping.)*
-3. **P2PDMA Whitelist Clearance (`p2pdma.c`)**:
-   - The Linux PCI core verifies that Host Bridge `8086:6f00` is whitelisted.
-   - `calc_map_type_and_dist()` returns `PCI_P2PDMA_MAP_THRU_HOST_BRIDGE` rather than `PCI_P2PDMA_MAP_NOT_SUPPORTED`, allowing DMA-BUF mapping across root ports.
-4. **Transport Layer (HIP IPC & RCCL)**:
-   - User-space applications utilize HIP IPC for zero-copy cross-process buffer sharing (`HSA_ENABLE_IPC_MODE_LEGACY=0` on the reference stack).
-   - Collective operations run via a patched RCCL library with `NCCL_P2P_LEVEL=PHB`, enabling direct GPU-to-GPU AllReduce over the PCIe bus without falling back to host shared memory (SHM).
+## What the evidence shows
+
+The reference run includes bidirectional HIP IPC integrity results, per-direction TransferBench results, and RCCL logs showing `isAllDirectP2p 1` and `via P2P/IPC`. Those results support successful P2P operation for this tested system and configuration. See [high-address investigation](high-address-p2p-investigation.md) for the evidence limits and [the manifest](../results/evidence-manifest.json) for artifact hashes.
+
+## What the diagram does not claim
+
+BAR resource addresses are not presented as IOVAs in this diagram. The repository does not contain a reproducible, end-to-end capture of DMA-BUF attachment, `dma_map_resource()`, the IOMMU output mapping, the peer buffer's GPUVM PTE, and the actual GPU DMA request address. Do not treat an inferred mapping or private trace as proof of that chain.
+
+The P2PDMA whitelist addresses the Linux PCI topology/map-type gate. HIP IPC and RCCL logs report application/runtime behavior. Those are distinct layers; success at one layer does not by itself prove the mechanism at every other layer.

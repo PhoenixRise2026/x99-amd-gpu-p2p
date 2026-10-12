@@ -1,59 +1,43 @@
-# DMA Addressing, ReBAR, and IOMMU Modes
+# DMA Addressing, ReBAR, and IOMMU Evidence
 
-## 1. Stock AMDGPU DMA Mask (FACT)
-* In the official AMDGPU driver source (`drivers/gpu/drm/amd/amdgpu/gmc_v12_0.c` line 803):
-  ```c
-  r = dma_set_mask_and_coherent(adev->dev, DMA_BIT_MASK(44));
-  ```
-* Both AMD Radeon AI PRO R9700 GPUs report a 44-bit DMA mask in Linux sysfs:
-  ```text
-  /sys/bus/pci/devices/0000:05:00.0/dma_mask_bits = 44
-  /sys/bus/pci/devices/0000:08:00.0/dma_mask_bits = 44
-  ```
-* **The validated kernel does not contain a custom 44-bit DMA patch.**
-* AMDGPU uses its stock 44-bit DMA mask out of the box.
+This document separates enumerated hardware facts and successful transfer observations from the not-yet-traced address-translation mechanism. The full evidence ledger is in [High-address P2P investigation](high-address-p2p-investigation.md).
 
----
+## FACT: reference hardware and DMA mask
 
-## 2. ReBAR Placement (FACT)
-On platforms with Resizable BAR enabled for dual 32 GiB GPUs, the system firmware assigns BAR0 apertures above the 4 TiB boundary:
-* GPU 0 (`05:00.0`): `0x380800000000 - 0x380fffffffff` (32 GiB, ReBAR)
-* GPU 1 (`08:00.0`): `0x381000000000 - 0x3817ffffffff` (32 GiB, ReBAR)
+The sanitized reference capture records two AMD Radeon AI PRO R9700 devices:
 
-These physical addresses require 46 physical address bits ($\text{bit 45} = 1$).
+| GPU | BDF | BAR0 aperture | Size |
+| --- | --- | --- | ---: |
+| GPU 0 | `0000:05:00.0` | `0x380800000000–0x380fffffffff` | 32 GiB |
+| GPU 1 | `0000:08:00.0` | `0x381000000000–0x3817ffffffff` | 32 GiB |
 
----
+The captured Linux sysfs values report a 44-bit DMA mask for each GPU. The validated Ubuntu 6.8 kernel used the stock AMDGPU mask; it did not carry a custom DMA44 change. The BAR ranges are above the 44-bit address limit. These are separate observations; they do not by themselves show what address the GPU emitted for a peer transaction.
 
-## 3. Physical Address vs IOMMU Translated Address (INFERENCE & FACT)
+## OBSERVED: tested configuration
 
-### The Passthrough Mode Failure (`iommu=pt`)
-* Under `iommu=pt` (passthrough mode), DMA addresses map directly 1:1 to physical bus addresses.
-* Because the peer BAR sits at 46-bit physical addresses (`0x3808...`), a GPU with a 44-bit DMA mask ($2^{44}-1 = \text{0x00000FFFFFFFFFFF}$) cannot directly address it without truncation or out-of-bounds rejection.
-* AMDGPU's internal peer accessibility check (`aper_base & ~address_mask != 0`) evaluates to false, causing P2P negotiation to fail.
+With the original Ubuntu 6.8 P2PDMA whitelist patch, stock 44-bit AMDGPU mask, and Intel VT-d Translated configuration, the reference machine completed bidirectional HIP IPC data-integrity cases, peer TransferBench runs, and RCCL AllReduce with logs identifying P2P/IPC. The archived kernel-error sample recorded no new AER or DMAR errors for its reported interval.
 
-### The VT-d Translated Mode Solution (`DMA-FQ`)
-* On the reference system, Intel VT-d is enabled in **Translated mode** (the default Linux behavior when `iommu=pt` is absent).
-* Translated mode was required on this specific reference testbed due to the platform firmware allocating 64-bit BARs at physical 46-bit addresses; this is a characteristic of this reference system rather than an invariant requirement across all X99 motherboards.
-* When peer memory is attached via `dma_map_resource()`, the Intel IOMMU translates the target BAR into an IOVA.
-* Dynamic eBPF tracing confirmed that the IOMMU allocator assigns IOVAs within 32-bit address space:
-  * GPU0 mapping GPU1 BAR: IOVA returned is `0xfe200000` / `0x8e000000` (32-bit).
-  * GPU1 mapping GPU0 BAR: IOVA returned is `0xfe000000` / `0x8d000000` (32-bit).
-  *(Observed during private validation; raw eBPF trace not distributed in v0.1.)*
-* Because $32 \le 44$, all peer DMA transactions fall strictly within the GPU's stock 44-bit DMA mask.
-* **Result**: Zero DMAR faults, zero AER errors, and 100% data integrity with stock AMDGPU driver code.
+This supports the bounded statement that the native 44-bit setup completed these tests in the captured environment. It does not prove every device DMA request used an IOVA below 44 bits or that Translated mode is required on all X99 systems.
 
----
+## OPEN: end-to-end address mapping chain
 
-## 4. Historical 48-bit Experiment (HISTORICAL EXPERIMENT)
-* During early research, an experimental driver modification (`dma48.patch`) was tested, changing `DMA_BIT_MASK(44)` to `DMA_BIT_MASK(48)` in `gmc_v12_0.c`.
-* While this allowed peer checks to pass in passthrough mode, it introduced potential driver and swiotlb inconsistencies.
-* Once VT-d Translated mode was verified to naturally map IOVAs into 32-bit space, **the experimental 48-bit modification was completely reverted**.
-* The label "dma44" in the validated kernel build name was retained solely as a historical test milestone identifier to record that native 44-bit DMA was confirmed functional.
+The following chain has not been captured as one auditable trace:
 
----
+1. GPU BAR resource address and size.
+2. DMA-BUF export and importer attach.
+3. P2PDMA mapping result and any `dma_map_resource()` call.
+4. IOMMU mapping input and returned IOVA for this peer resource.
+5. GPUVM PTE programmed for the imported peer buffer.
+6. Address placed on the PCIe request by the GPU during that transfer.
 
-## 5. Current Validated State Summary
-The functional, production-stable configuration consists of:
-1. **Intel Broadwell `8086:6f00` P2PDMA whitelist patch** in the Linux kernel;
-2. **Stock AMDGPU 44-bit DMA mask** (no driver patch);
-3. **Intel VT-d in Translated mode** (`DMA-FQ`, standard default without `iommu=pt`).
+Prior internal notes quote candidate IOVAs such as `0xfe200000`, `0x8e000000`, `0xfe000000`, and `0x8d000000`. Those values came from private eBPF traces that are not included in this repository with capture scripts, kernel/source provenance, or a reproducible trace. Treat them as `OBSERVED_PRIVATE_NOT_REPRODUCIBLE`, not as public proof of a complete mapping chain.
+
+A 44-bit device DMA mask describes the DMA API constraint. A high PCI BAR address describes a physical resource placement. Without evidence tracing the relevant peer mapping and GPU request, one must not infer that the address placed on the wire equals either value, or that the IOMMU necessarily remapped that request in the expected way.
+
+## Historical DMA48 experiment
+
+A local DMA48 driver experiment was tried and reverted. Its patch and raw results are not part of this repository. It is historical context only, not a validated alternative or a production recommendation. The `dma44` suffix in an old local kernel name is also a historical build label; it does not identify a custom DMA44 patch.
+
+## Practical boundary
+
+Keep the known validated pieces distinct: the kernel whitelist change, stock AMDGPU mask, Translated-mode test configuration, and successful bidirectional application-level tests. For other systems, collect their own PCI resource layout and run the supported diagnostic suite. Do not prescribe `iommu=pt`, a custom DMA mask, or DMA48 from this evidence alone.
