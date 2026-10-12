@@ -1,6 +1,6 @@
 # System & Runtime Version Provenance Matrix
 
-This document provides the definitive version and revision mapping for all hardware, kernel, driver, runtime, library, and inference framework components used in the reference system validation.
+This document records the version and revision provenance for the reference-system captures. It is scoped to the archived test configuration, not a compatibility guarantee. Upstream status last checked 2026-10-12.
 
 ---
 
@@ -23,8 +23,8 @@ This document provides the definitive version and revision mapping for all hardw
 | :--- | :--- | :--- | :--- |
 | **Operating System** | Ubuntu 24.04.1 LTS | Linux Foundation Ubuntu Kernel Tree | Standard server distribution |
 | **Running Kernel** | `6.8.12-r9700-p2p-dma44` | Base `Ubuntu-6.8.0-139.139` (`78d7d3da9419bebf9c91d65c6268db56a705445e`) | Patched with `8086:6f00` P2PDMA whitelist entry. Stock 44-bit DMA mask. |
-| **Mainline Kernel Target**| Linux 7.3-rc5 | `torvalds/linux.git` `master` (`72d3fcf802c45d00b300f25b848a93c3a2bd7c7e`) | Upstream rebase target for candidate patch |
-| **IOMMU State** | Translated (`DMA-FQ`) | Kernel commandline `intel_iommu=on` | Dynamic 32/44-bit IOVA allocation |
+| **Mainline Kernel Status**| Linux 7.3-rc6 listed | [Kernel.org](https://www.kernel.org/), checked 2026-10-12 | `8086:6f00` patch reported applied to `pci/p2pdma` for v7.4, but absent from current Linus tree; no released kernel confirmed |
+| **IOMMU State** | Intel VT-d Translated (`DMA-FQ`) | Reference capture / kernel command line | Tested configuration; exact peer IOVA mapping and GPU request-address chain are not publicly traced |
 
 ---
 
@@ -34,8 +34,8 @@ This document provides the definitive version and revision mapping for all hardw
 | :--- | :--- | :--- | :--- |
 | **Kernel Driver (AMDGPU)**| ROCK DKMS `6.16.13` | Module SHA256: `dfab6f8d6c54fab1658766f469967190a419f6aa09c832352998d1ba95fe88c5` | Stock `DMA_BIT_MASK(44)` |
 | **ROCm Runtime** | `7.2.4` | `dpkg -l rocm-core` / `hipcc` | System ROCm package release |
-| **RCCL Runtime** | `2.27.7` | `librccl.so.1.0` (SHA256: `8caa0dfd7a8b504a49864e6bad4b20e4ac326c57731cd627c4985022dbe24d04`)| Patched with PHB user override fix |
-| **RCCL Source Base Tag** | `rocm-7.2.0` | Commit `0d2c4fd4c5ea8aa96b4ac4eb468fb4146ab2c921` | Base repository: `https://github.com/ROCm/rccl` |
+| **RCCL Runtime** | `2.27.7` | `librccl.so.1.0` (SHA256: `8caa0dfd7a8b504a49864e6bad4b20e4ac326c57731cd627c4985022dbe24d04`) | Reference library includes the local PHB override change; exact binary is not redistributed |
+| **RCCL Source Base Tag** | `rocm-7.2.0` | Commit `0d2c4fd4c5ea8aa96b4ac4eb468fb4146ab2c921` | Local patch is version-scoped; release/develop review is summarized in [RCCL compatibility notes](rccl.md) |
 | **Triton Runtime** | `3.6.0` | Python package `triton==3.6.0` | **ACTIVE** for attention, GDN, and AWQ GEMM |
 | **AITER Runtime** | None / Absent | `AITER_ACTIVE = NO` | Not installed; not used in validated inference stack |
 

@@ -1,3 +1,7 @@
+# HISTORICAL SNAPSHOT — superseded 2026-10-12 by README.md and docs/upstream-status.md.
+# The pending-submission status below reflects preparation on 2026-09-28 only.
+# The maintainer later reported the patch applied to pci/p2pdma for v7.4.
+# This does not mean it has merged to Linus or shipped in a released kernel.
 # Upstream Kernel Submission Draft
 
 UPSTREAM_BASE_SHA: 72d3fcf802c45d00b300f25b848a93c3a2bd7c7e
