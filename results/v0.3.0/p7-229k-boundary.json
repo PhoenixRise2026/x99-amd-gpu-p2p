@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "experiment_id": "P7C-R8N",
+  "evidence_class": "BOUNDARY_FAILURE_CASE",
+  "result_class": "PARTIAL_OR_ABORTED",
+  "date_utc": "2026-10-01",
+  "requested_input_tokens": 229000,
+  "server_accepted_full_input": false,
+  "observed_rejection_limit_tokens": 227701,
+  "configured_context_cap": 262144,
+  "http_status": 200,
+  "finish_reason": "abort",
+  "semantic_pass": false,
+  "request_sent": true,
+  "abort_reported_usage": {
+    "prompt_tokens": 1,
+    "completion_tokens": 1
+  },
+  "failure_class": "CONTEXT_LIMIT_REJECTED",
+  "limit_scope": "THIS_SOFTWARE_STACK_AND_CONFIGURATION_ONLY",
+  "runtime": {
+    "tensor_parallel_size": 2,
+    "model_weight_checksum": "UNKNOWN",
+    "exact_software_versions": "UNKNOWN",
+    "image_identifier": "RECORDED_BUT_WITHHELD"
+  },
+  "limitations": [
+    "HTTP_200_DOES_NOT_ESTABLISH_INFERENCE_SUCCESS",
+    "REQUEST_WAS_NOT_ACCEPTED_AS_FULL_INPUT",
+    "227701_IS_NOT_A_HARDWARE_LIMIT",
+    "NO_GENERAL_256K_SUCCESS_CLAIM"
+  ]
+}

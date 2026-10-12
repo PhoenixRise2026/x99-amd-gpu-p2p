@@ -16,9 +16,9 @@
 
 ---
 
-## 实测验证指标
+## v0.2.0 P2P 实测验证指标
 
-以下所有性能数据均严格基于可复查的原始实测证据：
+本表中的证据标签仅适用于所列 v0.2.0 P2P 实测指标；这些指标对应可复查的原始实测证据。该标签不适用于单独记录的 v0.3.0 推理观察，后者的证据等级为 `SUMMARY_ONLY`。
 
 | 基准测试 | 原生基准 (Stock Baseline) | 直接 P2P (本项目) | 指标说明 | 原始证据来源 |
 | :--- | :--- | :--- | :--- | :--- |
@@ -30,6 +30,20 @@
 | **内核错误样本** | 无配对基线 | **观察到 0 次** | 存档时间段内没有 AER/DMAR 故障 | `examples/broadwell-r9700/kernel-errors.txt` |
 
 *参考平台：单路 Intel Xeon E5-2697A v4 (Broadwell-EP)，2x AMD Radeon AI PRO R9700 (RDNA4 gfx1201)，ROCm 7.2.4，Ubuntu 24.04 / patched Ubuntu 6.8。Prefill A/B 结果并不一致：1K 中位数 +32.1%、4K −3.7%、16K +0.5%、32K +25.5%；试验次数和完整区间见[结果表](results/x99-r9700-qwen38.md)。*
+
+## v0.3.0 推理研究——有限证据结果
+
+推理研究与 v0.2.0 P2P 通信结果分开记录。P5B-R 保存了 Plain / MTP / DFlash2 在 8K、32K、64K 下的解码速率汇总值，证据等级为 **`SUMMARY_ONLY`**。目前没有定位到逐轮样本，也没有已验证的聚合方法，因此这些数值不是可独立复现的 benchmark，也不能证明是中位数。32K DFlash2 的存储值为 **55.39 tok/s**；公式复算为 **55.395043 tok/s**，常规两位小数四舍五入为 **55.40 tok/s**。原始报告的舍入规则未知。详见[FP8 TP2 性能审计](docs/sglang-fp8-tp2-performance.md)。
+
+| 上下文 | Plain | MTP | DFlash2 |
+| --- | ---: | ---: | ---: |
+| 8K | 21.48 | 42.29 | 51.44 |
+| 32K | 19.21 | 45.32 | 55.39 |
+| 64K | 16.82 | 28.60 | 59.81 |
+
+P7 证据包含一次 **224000 输入 token** 的 TP2 请求，HTTP 200、`finish_reason=stop`、`semantic_pass=true`；实际生成 token 数缺失，因此无法计算输出吞吐率。**229000 输入 token** 请求虽然返回 HTTP 200，但以 `finish_reason=abort`、`semantic_pass=false` 结束，分类为 `PARTIAL_OR_ABORTED`；已审阅日志记录本次软件栈和配置在超过 **227701 tokens** 时拒绝请求。HTTP 请求成功不等于推理成功。**128K 和 192K 结果未纳入本次 Option B 已审计证据集**；此处不对其他尚未审阅的历史实验作判断。当前已审阅证据未能证明 256K 推理成功；配置的上下文上限不等于完成一次 256K 请求。详见[长上下文边界报告](docs/sglang-long-context-boundaries.md)。
+
+MTP 和 DFlash2 属于推理软件栈模式，其性能差异**不能归因于 P2P 加速**。P5B 的模型/权重、软件版本、构建身份和逐轮配置来源仍未验证。
 
 ---
 
@@ -81,7 +95,7 @@ x99-amd-gpu-p2p/
 │   └── evidence-manifest.json # 工件哈希与证据边界
 ├── tests/                  # 离线 fail-closed 与证据验证
 ├── .github/workflows/      # 仅运行离线检查的 CI
-├── RELEASE_NOTES_v0.2.0.md # 草稿；未创建 tag 或 Release
+├── RELEASE_NOTES_v0.2.0.md # v0.2.0 发布说明
 ├── scripts/                # 自动化非破坏性检测脚本
 │   ├── diagnose.sh         # Fail-closed 自动化诊断工具
 │   ├── collect-topology.sh # 收集 PCIe 树与设备 BDF 拓扑
@@ -166,8 +180,11 @@ git apply patches/linux/validated/0001-pci-p2pdma-add-broadwell-6f00-host-bridge
 - [Linux 上游状态](docs/upstream-status.md)
 - [高地址 P2P 调查](docs/high-address-p2p-investigation.md)
 - [证据清单](results/evidence-manifest.json)
-- [v0.2.0 Release Notes 草稿](RELEASE_NOTES_v0.2.0.md)
+- [v0.2.0 Release Notes](RELEASE_NOTES_v0.2.0.md)
+- [v0.3.0 Release Notes](RELEASE_NOTES_v0.3.0.md)
 - [SGLang Qwen3.8-27B 实测推理案例研究](docs/sglang-qwen38-case-study.md)
+- [SGLang FP8 TP2 性能审计](docs/sglang-fp8-tp2-performance.md)
+- [SGLang 长上下文边界](docs/sglang-long-context-boundaries.md)
 
 ---
 

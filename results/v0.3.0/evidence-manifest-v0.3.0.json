@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "target_version": "v0.3.0",
+  "entries": [
+    {
+      "path": "results/v0.3.0/p5br-fp8-tp2-summary.json",
+      "sha256": "32fa53e7bccc5913ffb480efd8e1e86fd7be290d2ab4936a919d84f2b64dffb5",
+      "evidence_class": "SUMMARY_ONLY",
+      "source_artifacts": [
+        {
+          "artifact": "p5br_final_results.json",
+          "sha256": "1f1fa4b8cda86914db89127ad2b311c3b24baae2443cd0bac61405af78535f83"
+        }
+      ],
+      "redaction_profile": "ALLOWLIST_V1_BODY_AND_ENVIRONMENT_IDENTIFIERS_OMITTED"
+    },
+    {
+      "path": "results/v0.3.0/p7-224k-single-case.json",
+      "sha256": "2699e08d62a886ea82c58e596ab3c2271f3ab3f5450150b9c8c2672a197f1352",
+      "evidence_class": "SINGLE_CASE",
+      "source_artifacts": [
+        {
+          "artifact": "probe_224000_manifest.json",
+          "sha256": "57992eabbb74d92970b961003f4436c5829af40e8a202141e273e14466b3a674"
+        },
+        {
+          "artifact": "probe_224000_result.json",
+          "sha256": "77d68b416ffecf158247c5b8a21248768eb7f5826f2e0a493dcad501eb7a3d7a"
+        },
+        {
+          "artifact": "runtime_identity_verified.json",
+          "sha256": "7bcb6fe27449cc77379777045830e17fedcb1d6a5714aeae18fa96443de41565"
+        },
+        {
+          "artifact": "gpu_activity_summary.json",
+          "sha256": "8a91ee66bdf110d436812e06b4a83d26e2014c9b7fec2b428be2b3d84accf4c2"
+        },
+        {
+          "artifact": "sglang_request_window.log",
+          "sha256": "2dd7d549ecbe8c8bec020c4b5f7fae611e052fd44435dc9527eb9a9ba8068dd5"
+        }
+      ],
+      "redaction_profile": "ALLOWLIST_V1_BODY_AND_ENVIRONMENT_IDENTIFIERS_OMITTED"
+    },
+    {
+      "path": "results/v0.3.0/p7-229k-boundary.json",
+      "sha256": "350a32ba24985f292d0520965b71ffd4e1b210f48ef7ddf215e76fb6f6f14d5c",
+      "evidence_class": "BOUNDARY_FAILURE_CASE",
+      "source_artifacts": [
+        {
+          "artifact": "probe_229000_manifest.json",
+          "sha256": "01d33d4937f40a8d520cd88ba89e152d7f407882783f01d4c74a853257a67d4d"
+        },
+        {
+          "artifact": "probe_229000_result.json",
+          "sha256": "3c3f87fee6c72488be00234bde5706b400b460d6fea9ec8598a278be2e296887"
+        },
+        {
+          "artifact": "probe_229000_sglang_after.log",
+          "sha256": "1dbac7970f33cda425b7ed8581a2ad4af12cab2a4124bb80a87fe9bbc820e5c1"
+        },
+        {
+          "artifact": "container_runtime_identity.txt",
+          "sha256": "9c64e8a4c59200c7bb333f77caabcdc7fc82151d744a297683fcbf392fe98ef9"
+        },
+        {
+          "artifact": "runtime_model_config.txt",
+          "sha256": "7c86121680aa5c81375e6662801b3967c0330a655fe7eda6009f3c71d393c0c4"
+        }
+      ],
+      "redaction_profile": "ALLOWLIST_V1_BODY_AND_ENVIRONMENT_IDENTIFIERS_OMITTED"
+    }
+  ],
+  "context_claims": [
+    {
+      "input_tokens": 128000,
+      "status": "NOT_IN_OPTION_B_AUDITED_EVIDENCE_SET"
+    },
+    {
+      "input_tokens": 192000,
+      "status": "NOT_IN_OPTION_B_AUDITED_EVIDENCE_SET"
+    },
+    {
+      "input_tokens": 224000,
+      "status": "ONE_REQUEST_ONLY"
+    },
+    {
+      "input_tokens": 229000,
+      "status": "PARTIAL_OR_ABORTED"
+    },
+    {
+      "input_tokens": 256000,
+      "status": "NO_SUCCESS_CLAIM_FROM_REVIEWED_EVIDENCE"
+    }
+  ]
+}

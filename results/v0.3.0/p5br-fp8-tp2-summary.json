@@ -1,0 +1,156 @@
+{
+  "schema_version": 1,
+  "experiment_id": "P5B-R",
+  "evidence_class": "SUMMARY_ONLY",
+  "records": [
+    {
+      "context": "8K",
+      "mode": "plain",
+      "input_tokens": 8000,
+      "completion_tokens_reported": 256,
+      "decode_time_seconds": 11.8714,
+      "decode_tokens_per_second_stored": 21.48,
+      "decode_tokens_per_second_recalculated": "21.480196",
+      "recalculated_half_up_2dp": "21.48"
+    },
+    {
+      "context": "8K",
+      "mode": "mtp",
+      "input_tokens": 8000,
+      "completion_tokens_reported": 256,
+      "decode_time_seconds": 6.0301,
+      "decode_tokens_per_second_stored": 42.29,
+      "decode_tokens_per_second_recalculated": "42.287856",
+      "recalculated_half_up_2dp": "42.29"
+    },
+    {
+      "context": "8K",
+      "mode": "dflash2",
+      "input_tokens": 8000,
+      "completion_tokens_reported": 256,
+      "decode_time_seconds": 4.9575,
+      "decode_tokens_per_second_stored": 51.44,
+      "decode_tokens_per_second_recalculated": "51.437216",
+      "recalculated_half_up_2dp": "51.44"
+    },
+    {
+      "context": "32K",
+      "mode": "plain",
+      "input_tokens": 32000,
+      "completion_tokens_reported": 256,
+      "decode_time_seconds": 13.2714,
+      "decode_tokens_per_second_stored": 19.21,
+      "decode_tokens_per_second_recalculated": "19.214250",
+      "recalculated_half_up_2dp": "19.21"
+    },
+    {
+      "context": "32K",
+      "mode": "mtp",
+      "input_tokens": 32000,
+      "completion_tokens_reported": 256,
+      "decode_time_seconds": 5.6272,
+      "decode_tokens_per_second_stored": 45.32,
+      "decode_tokens_per_second_recalculated": "45.315610",
+      "recalculated_half_up_2dp": "45.32"
+    },
+    {
+      "context": "32K",
+      "mode": "dflash2",
+      "input_tokens": 32000,
+      "completion_tokens_reported": 256,
+      "decode_time_seconds": 4.6033,
+      "decode_tokens_per_second_stored": 55.39,
+      "decode_tokens_per_second_recalculated": "55.395043",
+      "recalculated_half_up_2dp": "55.40"
+    },
+    {
+      "context": "64K",
+      "mode": "plain",
+      "input_tokens": 64000,
+      "completion_tokens_reported": 256,
+      "decode_time_seconds": 15.1573,
+      "decode_tokens_per_second_stored": 16.82,
+      "decode_tokens_per_second_recalculated": "16.823577",
+      "recalculated_half_up_2dp": "16.82"
+    },
+    {
+      "context": "64K",
+      "mode": "mtp",
+      "input_tokens": 64000,
+      "completion_tokens_reported": 256,
+      "decode_time_seconds": 8.9147,
+      "decode_tokens_per_second_stored": 28.6,
+      "decode_tokens_per_second_recalculated": "28.604440",
+      "recalculated_half_up_2dp": "28.60"
+    },
+    {
+      "context": "64K",
+      "mode": "dflash2",
+      "input_tokens": 64000,
+      "completion_tokens_reported": 256,
+      "decode_time_seconds": 4.2637,
+      "decode_tokens_per_second_stored": 59.81,
+      "decode_tokens_per_second_recalculated": "59.807210",
+      "recalculated_half_up_2dp": "59.81"
+    }
+  ],
+  "ratios": [
+    {
+      "context": "8K",
+      "comparison": "mtp/plain",
+      "stored_scalar_ratio": "1.968808",
+      "interpretation": "Arithmetic on SUMMARY_ONLY values; not a repeated-run statistic and not evidence of P2P causality."
+    },
+    {
+      "context": "8K",
+      "comparison": "dflash2/plain",
+      "stored_scalar_ratio": "2.394786",
+      "interpretation": "Arithmetic on SUMMARY_ONLY values; not a repeated-run statistic and not evidence of P2P causality."
+    },
+    {
+      "context": "32K",
+      "comparison": "mtp/plain",
+      "stored_scalar_ratio": "2.359188",
+      "interpretation": "Arithmetic on SUMMARY_ONLY values; not a repeated-run statistic and not evidence of P2P causality."
+    },
+    {
+      "context": "32K",
+      "comparison": "dflash2/plain",
+      "stored_scalar_ratio": "2.883394",
+      "interpretation": "Arithmetic on SUMMARY_ONLY values; not a repeated-run statistic and not evidence of P2P causality."
+    },
+    {
+      "context": "64K",
+      "comparison": "mtp/plain",
+      "stored_scalar_ratio": "1.700357",
+      "interpretation": "Arithmetic on SUMMARY_ONLY values; not a repeated-run statistic and not evidence of P2P causality."
+    },
+    {
+      "context": "64K",
+      "comparison": "dflash2/plain",
+      "stored_scalar_ratio": "3.555886",
+      "interpretation": "Arithmetic on SUMMARY_ONLY values; not a repeated-run statistic and not evidence of P2P causality."
+    }
+  ],
+  "rounding_discrepancy": {
+    "condition": "32K/DFlash2",
+    "stored_tok_s": 55.39,
+    "formula_recalculated_tok_s": "55.395043",
+    "half_up_two_decimal_tok_s": "55.40",
+    "source_rounding_rule": "UNKNOWN",
+    "status": "ROUNDING_METHOD_UNVERIFIED"
+  },
+  "provenance": {
+    "per_run_samples": "NOT_LOCATED",
+    "repetitions_and_aggregation": "NOT_RECORDED",
+    "model_and_weights": "NOT_VERIFIED",
+    "software_and_build": "NOT_VERIFIED",
+    "runtime_and_condition_linkage": "NOT_VERIFIED",
+    "causality": "P2P causality NOT_ESTABLISHED; inference-mode differences do not isolate transport."
+  },
+  "excluded_fields": [
+    "Generated output body omitted.",
+    "VRAM aliases omitted because they lack run and device linkage.",
+    "Private paths, host/account identifiers, payloads, command lines, and credentials are excluded."
+  ]
+}

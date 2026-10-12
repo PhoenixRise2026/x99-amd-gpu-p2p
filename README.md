@@ -16,9 +16,9 @@ The reference Ubuntu 6.8 system with the local whitelist patch, stock 44-bit AMD
 
 ---
 
-## Verified Empirical Metrics
+## Verified v0.2.0 P2P Empirical Metrics
 
-All performance figures below are strictly locked to verifiable raw test evidence:
+The evidence label in this table applies only to the v0.2.0 P2P measurements listed here, which are tied to verifiable raw test evidence. It does not apply to the separate v0.3.0 inference observations, which are `SUMMARY_ONLY`.
 
 | Benchmark | Stock Baseline | Direct P2P (This Repo) | Metric Description | Raw Evidence Source |
 | :--- | :--- | :--- | :--- | :--- |
@@ -30,6 +30,20 @@ All performance figures below are strictly locked to verifiable raw test evidenc
 | **Kernel Error Sample** | No paired baseline | **0 observed** | No AER/DMAR faults in the archived interval | `examples/broadwell-r9700/kernel-errors.txt` |
 
 *Reference Platform: Single Intel Xeon E5-2697A v4 (Broadwell-EP), 2x AMD Radeon AI PRO R9700 (RDNA4 gfx1201), ROCm 7.2.4, Ubuntu 24.04 / patched Ubuntu 6.8. Prefill A/B results are mixed: +32.1% at 1K, −3.7% at 4K, +0.5% at 16K, and +25.5% at 32K medians; see [full ranges and trial counts](results/x99-r9700-qwen38.md).*
+
+## v0.3.0 Inference Research — Limited-Evidence Results
+
+This inference research is separate from the v0.2.0 P2P communication results. P5B-R records Plain / MTP / DFlash2 decode-rate scalars at 8K, 32K, and 64K as **`SUMMARY_ONLY`**. The summary has no located per-run samples or verified aggregation method, so these values are not an independently reproducible benchmark and do not establish medians. At 32K, DFlash2 is stored as **55.39 tok/s**; the checked formula gives **55.395043 tok/s**, which rounds half-up to **55.40 tok/s**. The source rounding rule is unknown. See the [FP8 TP2 performance audit](docs/sglang-fp8-tp2-performance.md).
+
+| Context | Plain | MTP | DFlash2 |
+| --- | ---: | ---: | ---: |
+| 8K | 21.48 | 42.29 | 51.44 |
+| 32K | 19.21 | 45.32 | 55.39 |
+| 64K | 16.82 | 28.60 | 59.81 |
+
+The P7 evidence contains one **224000-input-token** TP2 request with HTTP 200, `finish_reason=stop`, and `semantic_pass=true`; actual generated-token count is missing, so output throughput cannot be derived. The **229000-input-token** request returned HTTP 200 but ended with `finish_reason=abort` and `semantic_pass=false`; it is classified `PARTIAL_OR_ABORTED`. The reviewed log records rejection above **227701 tokens** for that software stack and configuration. HTTP success is not inference success. **128K and 192K results are not included in this Option B audited evidence set**; this does not assess other historical experiments that have not been reviewed. The evidence reviewed here does not establish successful 256K inference; a configured context cap is not a completed 256K request. See the [long-context boundary report](docs/sglang-long-context-boundaries.md).
+
+MTP and DFlash2 are inference-stack modes. Their performance differences **cannot be attributed to P2P acceleration**; P5B-R does not establish P2P causality. Exact P5B model/weight, software-version, build, and per-run configuration provenance remain unverified.
 
 ---
 
@@ -80,7 +94,7 @@ x99-amd-gpu-p2p/
 │   └── evidence-manifest.json # Artifact hashes and evidence limits
 ├── tests/                  # Offline fail-closed and evidence validation
 ├── .github/workflows/      # Offline-only CI
-├── RELEASE_NOTES_v0.2.0.md # Draft; no tag or release created
+├── RELEASE_NOTES_v0.2.0.md # v0.2.0 release notes
 ├── scripts/                # Automated non-destructive inspection tools
 │   ├── diagnose.sh         # Fail-closed diagnostic tool
 │   ├── collect-topology.sh # Collects tree and device BDF topology
@@ -165,8 +179,11 @@ Direct P2P AllReduce requires clearing three distinct layers (validated on the r
 - [Linux Upstream Status](docs/upstream-status.md)
 - [High-address P2P Investigation](docs/high-address-p2p-investigation.md)
 - [Evidence Manifest](results/evidence-manifest.json)
-- [v0.2.0 Release Notes Draft](RELEASE_NOTES_v0.2.0.md)
+- [v0.2.0 Release Notes](RELEASE_NOTES_v0.2.0.md)
+- [v0.3.0 Release Notes](RELEASE_NOTES_v0.3.0.md)
 - [SGLang Qwen3.8-27B Inference Case Study](docs/sglang-qwen38-case-study.md)
+- [SGLang FP8 TP2 Performance Audit](docs/sglang-fp8-tp2-performance.md)
+- [SGLang Long-Context Boundaries](docs/sglang-long-context-boundaries.md)
 
 ---
 

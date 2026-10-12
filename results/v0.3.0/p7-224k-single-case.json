@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "experiment_id": "P7C-R8N-1",
+  "evidence_class": "SINGLE_CASE",
+  "result_class": "VALIDATED_SUCCESS",
+  "date_utc": "2026-10-01",
+  "requested_input_tokens": 224000,
+  "server_accepted_input_tokens": 224000,
+  "http_status": 200,
+  "finish_reason": "stop",
+  "semantic_pass": true,
+  "reported_semantic_check": "FIXED_HARNESS_SENTINEL_NOT_GENERAL_QUALITY",
+  "request_attempts": 1,
+  "ttft_seconds": 330.757,
+  "end_to_end_seconds": 330.872,
+  "max_new_tokens_budget": 128,
+  "actual_generated_tokens": null,
+  "runtime": {
+    "model_label": "Qwen3.8-27B-FP8",
+    "tensor_parallel_size": 2,
+    "kv_cache_dtype": "fp8_e4m3",
+    "attention_backend": "Triton",
+    "speculative_algorithm": "DFLASH",
+    "exact_software_versions": "UNKNOWN",
+    "weight_checksum": "UNKNOWN",
+    "image_identifier": "RECORDED_BUT_WITHHELD"
+  },
+  "limitations": [
+    "ONE_REQUEST_ONLY_NO_STABILITY_CLAIM",
+    "ACTUAL_GENERATED_TOKEN_COUNT_NOT_RECORDED",
+    "OUTPUT_THROUGHPUT_NOT_DERIVABLE",
+    "SOFTWARE_VERSION_AND_WEIGHT_CHECKSUM_UNKNOWN",
+    "SEMANTIC_FLAG_IS_NOT_GENERAL_QUALITY_ASSESSMENT"
+  ]
+}
