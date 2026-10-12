@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: MIT
+name: Offline validation
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  offline:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check shell syntax
+        run: bash -n scripts/*.sh scripts/lib/*.sh tests/*.sh
+      - name: Run offline regression tests
+        run: bash tests/run-offline-tests.sh
+      - name: Validate evidence manifest, publication scan, and README facts
+        run: python3 tests/validate_repository.py

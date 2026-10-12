@@ -1,66 +1,28 @@
-# Diagnose Fail-Closed Unit Test Matrix
+# Diagnose Fail-Closed Regression Coverage
 
-This document records the verification of the fail-closed behavior of `scripts/diagnose.sh` across all test conditions (Cases A through F).
+This file records the current automated offline test suite. It replaces the earlier manually reported cases, which predated the current topology and parser gates.
 
-## Test Matrix & Results
+## Run
 
-| Case | Scenario | Command / Injected Condition | Expected Prerequisites | Expected P2P Ready | Actual Result | Status |
-| :--- | :--- | :--- | :---: | :---: | :---: | :---: |
-| **Case A** | Default run (no args) | `./scripts/diagnose.sh` | `PASS` | `INCONCLUSIVE` | `P2P_PREREQUISITES = PASS`<br>`DIRECT_P2P_READY = INCONCLUSIVE` | **PASS** |
-| **Case B** | Missing GPU (1 GPU detected) | `TEST_MOCK_GPU_COUNT=1 ./scripts/diagnose.sh` | `FAIL` | `NO` | `P2P_PREREQUISITES = FAIL`<br>`DIRECT_P2P_READY = NO` | **PASS** |
-| **Case C** | IOMMU mode unknown | `TEST_MOCK_IOMMU=UNKNOWN ./scripts/diagnose.sh` | `FAIL` | `NO` | `P2P_PREREQUISITES = FAIL`<br>`DIRECT_P2P_READY = NO` | **PASS** |
-| **Case D** | TransferBench active failure | `TEST_MOCK_TRANSFERBENCH=FAIL ./scripts/diagnose.sh --full` | `PASS` | `NO` | `P2P_PREREQUISITES = PASS`<br>`DIRECT_P2P_READY = NO` | **PASS** |
-| **Case E** | RCCL fallback to SHM staging | `TEST_MOCK_RCCL=FAIL ./scripts/diagnose.sh --full` | `PASS` | `NO` | `P2P_PREREQUISITES = PASS`<br>`DIRECT_P2P_READY = NO` | **PASS** |
-| **Case F** | All test mocks PASS | `TEST_MOCK_HIP_IPC=PASS TEST_MOCK_TRANSFERBENCH=PASS TEST_MOCK_RCCL=PASS ./scripts/diagnose.sh --full` | `PASS` | `TEST_ONLY` (`TEST_MODE=YES`) | `P2P_PREREQUISITES = PASS`<br>`DIRECT_P2P_READY = TEST_ONLY`<br>`TEST_MODE = YES` | **PASS** |
-
-## Raw Test Execution Log
-
-```text
-=== Case A: Default run ===
-P2P_PREREQUISITES = PASS
-DIRECT_P2P_READY = INCONCLUSIVE
-
-=== Case B: Missing GPU ===
-P2P_PREREQUISITES = FAIL
-DIRECT_P2P_READY = NO
-
-=== Case C: IOMMU unknown ===
-P2P_PREREQUISITES = FAIL
-DIRECT_P2P_READY = NO
-
-=== Case D: TransferBench mock FAIL ===
-P2P_PREREQUISITES = PASS
-DIRECT_P2P_READY = NO
-
-=== Case E: RCCL fallback to SHM ===
-P2P_PREREQUISITES = PASS
-DIRECT_P2P_READY = NO
-
-=== Case F: All mocks PASS ===
-P2P_PREREQUISITES = PASS
-DIRECT_P2P_READY = TEST_ONLY
-TEST_MODE = YES
+```bash
+bash -n scripts/*.sh scripts/lib/*.sh tests/*.sh
+bash tests/run-offline-tests.sh
+python3 tests/validate_repository.py
 ```
 
-## Fail-Closed Guarantees Confirmed
-1. Missing explicit active tests in default mode does not emit `DIRECT_P2P_READY = YES`.
-2. Unconfirmed or missing IOMMU translation does not assume Translated mode.
-3. Test mocks cannot bypass production gates to emit `DIRECT_P2P_READY = YES`.
+The suite creates temporary fake sysfs trees and command fixtures. It does not access GPU hardware or run the external HIP IPC, TransferBench, or RCCL binaries. The full-diagnose success case injects all mocks under explicit `TEST_MODE=YES` and must end in `DIRECT_P2P_READY = TEST_ONLY`.
 
----
+## Covered conditions
 
-## TransferBench Real Output Parser Fixtures (Cases TB-A to TB-F)
+- Both PCI sysfs ancestries resolve to different Root Ports and the same `8086:6f00` host bridge.
+- Same Root Port, different host-bridge domain, and insufficient GPU count fail closed.
+- Unknown IOMMU mode remains INCONCLUSIVE.
+- TransferBench matrix, CSV, and list formats: CPU-only, self-transfer, missing data, bytes mistaken for bandwidth, one-way-only, and valid bidirectional measurements.
+- RCCL direct-marker pass, SHM fallback fail, and incomplete transport markers/exit-zero-without-transport-evidence inconclusive.
+- HIP IPC missing-binary SKIP, all reported cases passing in both directions, failed case overriding zero exit, and exit-zero-without-integrity-evidence inconclusive.
+- Passthrough IOMMU behavior stays INCONCLUSIVE because the address path is untraced; an unreadable DMA mask or empty kernel log also stays INCONCLUSIVE.
+- Mocks without explicit `TEST_MODE=YES` are rejected; mocked full success remains TEST_ONLY.
 
-| Case | Scenario | Injected TransferBench Output | Expected TB Result | Actual Result | Status |
-| :--- | :--- | :--- | :---: | :---: | :---: |
-| **TB-A** | Standard matrix with GPU0/GPU1 off-diagonal | Header has GPU 00/01; `GPU 00 -> N/A 10.29`, `GPU 01 -> 10.27 N/A` | `PASS` | `PASS` | **PASS** |
-| **TB-B** | CPU->GPU only (no GPU peer transfers) | `CPU 00 -> 4.50 4.50` | `INCONCLUSIVE` | `INCONCLUSIVE` | **PASS** |
-| **TB-C** | GPU self-transfer only (GPU 00 -> GPU 00) | `GPU 00 -> 20.00 N/A` | `INCONCLUSIVE` | `INCONCLUSIVE` | **PASS** |
-| **TB-D** | Matrix all N/A | `GPU 00 -> N/A N/A`, `GPU 01 -> N/A N/A` | `FAIL` | `FAIL` | **PASS** |
-| **TB-E** | Header contains GB/s, cells are bare numbers | `GPU 00 -> ... 10.29`, `GPU 01 -> 10.27 ...` | `PASS` | `PASS` | **PASS** |
-| **TB-F** | Reference multi-line list log | `examples/broadwell-r9700/transferbench.txt` | `PASS` | `PASS` | **PASS** |
+## Recorded local result
 
-### Parser Guarantees Confirmed
-1. `TRANSFERBENCH_REAL_OUTPUT_PARSER = PASS`
-2. `TRANSFERBENCH_CPU_FALSE_POSITIVE_FIXED = YES`: CPU-only transfers cannot evaluate to PASS.
-3. `TRANSFERBENCH_MATRIX_FALSE_NEGATIVE_FIXED = YES`: Cells without verbatim `GB/s` correctly resolve off-diagonal peer bandwidth.
+On 2026-10-12, the shell suite completed with `OFFLINE_TESTS=PASS` and **45 assertions**; repository validation completed with `MANIFEST_VALIDATION=PASS`, `README_FACTS_AND_LINKS=PASS`, `LICENSE_AND_CI_SCOPE=PASS`, and `SECRET_SCAN=PASS`. Re-run these commands after any relevant change. A local pass validates fixtures and repository metadata only; it is not hardware, kernel, ROCm, or product acceptance.
