@@ -22,7 +22,7 @@ These are archived observations from one Broadwell-EP / dual-R9700 test configur
 
 ## Compatibility notes
 
-The local RCCL override patch is tied to the RCCL 2.27.7 / `rocm-7.2.0` source baseline. Current `develop` retains the user-level override lookup before the Intel x86 clamp at the check date; no inspected formal release confirms the changed ordering. Older releases remain unaudited in this update. Verify the exact library before applying the patch.
+The local RCCL override patch remains tied to the RCCL 2.27.7 / `rocm-7.2.0` source baseline and is preserved as a historical artifact. [ROCm/rocm-systems PR #12714](https://github.com/ROCm/rocm-systems/pull/12714) merged to `develop` on 2026-10-11 as [commit `65575fbbe6f73b9d9d96bfbcb523c856709e664c`](https://github.com/ROCm/rocm-systems/commit/65575fbbe6f73b9d9d96bfbcb523c856709e664c); the current develop source now reads the user override after the CPU defaults. This confirms a development-branch change, not a formal RCCL version or shipped ROCm package. Check the exact source/library before applying the patch or making a release-version claim.
 
 The upstream kernel change is maintainer-applied but not yet merged/released at the check date. The original Ubuntu patch remains the validated local artifact.
 

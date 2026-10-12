@@ -12,12 +12,13 @@ The repository patch is a narrow compatibility change based on RCCL `rocm-7.2.0`
 
 Version review on **2026-10-12**:
 
-- The official [ROCm/rocm-systems develop source](https://github.com/ROCm/rocm-systems/blob/develop/projects/rccl/src/graph/paths.cc) still calls `ncclGetUserP2pLevel()` **before** the Intel x86 clamp. The checked develop revision does not have equivalent ordering.
-- The official [ROCm RCCL release notes](https://github.com/ROCm/rccl/releases) identify RCCL 2.27.7 with ROCm 7.2.0 and report no RCCL code change in ROCm 7.2.1–7.2.4. On that source-level evidence, the same ordering issue and patch applicability carry across the 7.2.x source line unless a downstream build changed it. No inspected formal release confirms the fix; verify each actual packaged library.
-- RCCL releases older than the inspected 7.2 line were not re-audited for this maintenance update. Their status is **UNKNOWN**.
-- The reference run used ROCm 7.2.4 with a patched RCCL library built from the 2.27.7 source baseline. That is a runtime observation for this build, not proof about every RCCL binary carrying the same version string.
+- [ROCm/rocm-systems PR #12714](https://github.com/ROCm/rocm-systems/pull/12714) was merged into `develop` on 2026-10-11 as [commit `65575fbbe6f73b9d9d96bfbcb523c856709e664c`](https://github.com/ROCm/rocm-systems/commit/65575fbbe6f73b9d9d96bfbcb523c856709e664c). The [current `develop` source](https://github.com/ROCm/rocm-systems/blob/develop/projects/rccl/src/graph/paths.cc) applies the Intel/ARM/Zhaoxin CPU defaults first and calls `ncclGetUserP2pLevel()` afterward. The [branch comparison](https://github.com/ROCm/rocm-systems/compare/65575fbbe6f73b9d9d96bfbcb523c856709e664c...develop) confirms that `develop` descends from this commit.
+- This verifies the behavior on `develop`; it does **not** identify a formal RCCL version or ROCm package containing the change. The PR also adds a development changelog entry, but a `develop` merge alone is not a release. Check the exact tag/package source before making a release-version claim.
+- The local patch remains a historical compatibility artifact for the RCCL `rocm-7.2.0` / 2.27.7 source baseline. That source baseline reads the environment override before the platform default, so the patch remains relevant to that source unless downstream changes differ. Do not apply it to a source tree that already contains commit `65575fb`.
+- The official [ROCm RCCL release notes](https://github.com/ROCm/rccl/releases) identify RCCL 2.27.7 with ROCm 7.2.0 and report no RCCL source changes in ROCm 7.2.1–7.2.4. These records do not establish that those packages contain the later `develop` change; inspect the exact packaged source/library. Older releases remain **UNKNOWN**.
+- The reference run used ROCm 7.2.4 with a patched RCCL library built from the 2.27.7 source baseline. This is an observation for that build, not proof about every RCCL binary carrying the same version string.
 
-The patch is therefore a version-scoped compatibility artifact. Inspect `paths.cc` and verify logs for the exact source/library build before deciding whether to apply it. Do not apply it mechanically to every current or future release.
+The patch is version-scoped and has not been removed or rewritten. Inspect `paths.cc` and verify logs for the exact source/library build before deciding whether to apply it.
 
 ## Bandwidth metrics
 
